@@ -12,66 +12,90 @@
 <link rel="icon" href="icon-192.png">
 <title>小羊長大日記</title>
 <style>
+  /* 白天：溫暖紙張（灰白紙底、白卡、細線、一個綠色重點色）；晚上：夜光卡片（深色卡、底部透出暖光）。依手機時間自動切換 */
   :root {
-    --bg: #f6f8ef;
-    --card: #ffffff;
-    --ink: #2f3a2f;
-    --muted: #7a857a;
-    --green: #6bbf6e;
-    --green-dark: #4a9a4e;
-    --cream: #fff7e6;
-    --line: #e6eadc;
-    --danger: #d9534f;
-    --radius: 18px;
+    --bg: #ecebe5; --card: #ffffff; --ink: #1d1d1b; --muted: #77746b;
+    --line: #ecebe5; --edge: #deddd6;
+    --accent: #2e7d4f; --accent-strong: #23633e; --accent-soft: #e6efe8; --on-accent: #ffffff;
+    --field: #faf9f6; --soft: #f4f3ee;
+    --hi: #f7f1e3; --hi-edge: #eadfc3; --hi-ink: #8a6a2b;
+    --warn: #c4611c; --warn-soft: #fbeee2; --danger: #c94a3f; --info: #3a6ea8; --info-soft: #e8eff7;
+    --card-bg: var(--card); --tabs-bg: rgba(236,235,229,.94); --shadow: none;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+    --radius: 16px;
+    --m-sky1: #c9e3f2; --m-sky2: #f1f3ec; --m-cloud: #ffffff; --m-mount: #b7cbe0; --m-hill: #b7d6a0;
+    --m-grass1: #cfe6b5; --m-grass2: #b2d78f; --m-grass3: #95c46f; --m-line1: #a3cf7f; --m-line2: #8bbd66; --m-night: none;
+    color-scheme: light;
+  }
+  :root[data-theme=night] {
+    --bg: #0d0e13; --card: #16171e; --ink: #f1f0f6; --muted: #8e8d9a;
+    --line: #22232c; --edge: #262731;
+    --accent: #ffa766; --accent-strong: #ff8a3d; --accent-soft: rgba(255,167,102,.14); --on-accent: #1d1209;
+    --field: #1b1c24; --soft: #1c1d25;
+    --hi: #221d17; --hi-edge: #3b2f21; --hi-ink: #ffc89b;
+    --warn: #ffa766; --warn-soft: rgba(255,138,61,.14); --danger: #ff6f6f; --info: #9fb8ff; --info-soft: rgba(139,108,255,.16);
+    --card-bg: radial-gradient(120% 55% at 50% 125%, rgba(255,138,61,.15), transparent 70%), var(--card);
+    --tabs-bg: rgba(13,14,19,.94); --shadow: none;
+    --m-sky1: #121533; --m-sky2: #2b3163; --m-cloud: #3a4072; --m-mount: #1f2550; --m-hill: #1d3a2b;
+    --m-grass1: #1f3d2c; --m-grass2: #193326; --m-grass3: #132a1f; --m-line1: #28503a; --m-line2: #214532; --m-night: inline;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
   body {
     font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
     background: var(--bg); color: var(--ink);
-    min-height: 100vh; font-size: 16px;
+    min-height: 100vh; font-size: 16px; transition: background .4s, color .4s;
   }
   .app { max-width: 480px; margin: 0 auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
-  h1 { font-size: 24px; margin: 8px 0 4px; }
-  h2 { font-size: 19px; margin: 0 0 12px; }
+  h1 { font-size: 24px; margin: 8px 0 4px; letter-spacing: -.01em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  h2 { font-size: 17px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  h1 .ic, h2 .ic { color: var(--accent); }
   .muted { color: var(--muted); font-size: 14px; }
-  .card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(60,80,40,.06); }
-  label { display: block; font-size: 14px; color: var(--muted); margin: 12px 0 6px; }
+  .card { background: var(--card-bg); border: 1px solid var(--edge); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  label { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); margin: 12px 0 6px; }
   input[type=text], input[type=tel], input[type=password], input[type=search] {
-    width: 100%; padding: 13px 14px; font-size: 16px; border: 1.5px solid var(--line);
-    border-radius: 12px; background: #fbfcf8; color: var(--ink); outline: none;
+    width: 100%; padding: 13px 14px; font-size: 16px; border: 1px solid var(--edge);
+    border-radius: 12px; background: var(--field); color: var(--ink); outline: none;
   }
-  input:focus { border-color: var(--green); }
-  button { font: inherit; cursor: pointer; border: 0; }
-  .btn { width: 100%; padding: 14px; border-radius: 14px; background: var(--green); color: #fff; font-weight: 600; font-size: 17px; margin-top: 16px; }
-  .btn:active { background: var(--green-dark); }
+  input:focus, textarea:focus { border-color: var(--accent) !important; }
+  ::placeholder { color: var(--muted); opacity: .8; }
+  button { font: inherit; cursor: pointer; border: 0; color: inherit; }
+  .btn { width: 100%; padding: 14px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 17px; margin-top: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn:active { background: var(--accent-strong); }
   .btn:disabled { opacity: .5; }
-  .btn.ghost { background: transparent; color: var(--green-dark); border: 1.5px solid var(--green); }
-  .link { background: none; color: var(--green-dark); padding: 8px; font-size: 15px; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .link { background: none; color: var(--accent); padding: 8px; font-size: 15px; display: inline-flex; align-items: center; gap: 6px; }
   .error { color: var(--danger); font-size: 14px; min-height: 20px; margin-top: 10px; }
   .center { text-align: center; }
   .hero { text-align: center; padding: 28px 0 12px; }
   .hero .big { font-size: 72px; line-height: 1; }
 
-  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--cream); display: inline-flex; align-items: center; justify-content: center; font-size: 36px; overflow: hidden; flex-shrink: 0; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  /* 線條圖示（取代 emoji，顏色跟著文字走） */
+  .ic { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -.2em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; } /* 點到圖示也算點到按鈕本身 */
+  .eyebrow { font: 500 11px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--hi); display: inline-flex; align-items: center; justify-content: center; font-size: 36px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--edge); }
   .avatar img { width: 100%; height: 100%; object-fit: cover; }
   .avatar.sm { width: 48px; height: 48px; font-size: 26px; }
   .avatar.lg { width: 96px; height: 96px; font-size: 54px; }
   .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-  .emoji-grid button { aspect-ratio: 1; font-size: 28px; border-radius: 12px; background: #f3f5ec; border: 2px solid transparent; }
-  .emoji-grid button.on { border-color: var(--green); background: #eaf6e6; }
-  .upload { display: inline-block; margin-top: 10px; color: var(--green-dark); font-size: 15px; }
+  .emoji-grid button { aspect-ratio: 1; font-size: 28px; border-radius: 12px; background: var(--soft); border: 1.5px solid transparent; }
+  .emoji-grid button.on { border-color: var(--accent); background: var(--accent-soft); }
+  .upload { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--accent); font-size: 15px; }
   .upload input { display: none; }
 
-  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: #eaf6e6; margin: 4px 6px 0 0; font-size: 14px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: var(--soft); border: 1px solid var(--edge); margin: 4px 6px 0 0; font-size: 14px; }
+  .chip .ic { width: 15px; height: 15px; }
+  .chip.ok .ic { color: var(--accent); }
   .chip button { background: none; color: var(--muted); font-size: 16px; padding: 0 2px; }
   .result { display: flex; justify-content: space-between; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); }
   .result:last-child { border-bottom: 0; }
-  .small-btn { padding: 7px 14px; border-radius: 999px; background: var(--green); color: #fff; font-size: 14px; }
-  .small-btn:disabled { background: #cfd6c6; }
+  .small-btn { padding: 7px 14px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 14px; display: inline-flex; align-items: center; gap: 4px; }
+  .small-btn:disabled { opacity: .35; }
 
   .team-head { display: flex; gap: 14px; align-items: center; }
-  .team-head .name { font-size: 21px; font-weight: 700; }
+  .team-head .name { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
   .stage-box { text-align: center; padding: 10px 0 4px; }
   .sheep-svg { position: relative; display: inline-block; vertical-align: bottom; cursor: pointer; flex-shrink: 0; }
   .sheep-svg .sh-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
@@ -120,86 +144,100 @@
   .heart-pop { position: fixed; z-index: 60; font-size: 24px; pointer-events: none; transform: translate(-50%, -50%); animation: heart-up 1s ease-out forwards; }
   @keyframes heart-up { from { opacity: 1; transform: translate(-50%, -50%) scale(.6); } to { opacity: 0; transform: translate(-50%, -160%) scale(1.3); } }
   @media (prefers-reduced-motion: reduce) { .sheep-svg *, .heart-pop { animation: none !important; } }
-  .stage-name { display: inline-block; margin-top: 8px; padding: 5px 14px; border-radius: 999px; background: var(--cream); font-weight: 700; color: #a0692b; }
-  .score { font-size: 40px; font-weight: 800; margin-top: 6px; }
-  .score small { font-size: 16px; color: var(--muted); font-weight: 500; }
-  .bar { height: 12px; background: #edf0e5; border-radius: 999px; overflow: hidden; margin-top: 8px; }
-  .bar > div { height: 100%; background: linear-gradient(90deg, #9bd88f, #6bbf6e); border-radius: 999px; transition: width .5s; }
-  .next { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .stage-name { display: inline-block; margin-top: 10px; padding: 4px 14px; border-radius: 999px; background: var(--accent-soft); font-weight: 700; color: var(--accent); font-size: 15px; }
+  .score { font: 500 40px/1.15 var(--mono); margin-top: 8px; letter-spacing: -.02em; }
+  .score small { font-size: 15px; color: var(--muted); font-weight: 400; }
+  .bar { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+  .bar > div { height: 100%; background: var(--accent); border-radius: 999px; transition: width .5s; }
+  :root[data-theme=night] .bar > div { background: linear-gradient(90deg, #ff8a3d, #ffd0a3); box-shadow: 0 0 10px #ff8a3d; }
+  .next { font-size: 13px; color: var(--muted); margin-top: 8px; }
 
-  .acts { display: grid; gap: 10px; }
-  .act { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 16px; background: #f3f8ee; border: 2px solid #e2efd8; text-align: left; color: var(--ink); font-size: 17px; }
+  .acts { display: grid; gap: 8px; }
+  .act { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--edge); text-align: left; color: var(--ink); font-size: 16px; transition: transform .1s; }
   .act:active { transform: scale(.98); }
-  .act .ico { font-size: 28px; }
+  .act .ico { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex-shrink: 0; font-size: 22px; }
+  .act .ico .ic { width: 22px; height: 22px; }
   .act .lbl { flex: 1; font-weight: 600; }
-  .act .pts { font-weight: 800; color: var(--green-dark); }
-  .act.done { background: #f2f2f2; border-color: #e5e5e5; color: #9a9a9a; }
-  .act.done .pts { color: #9a9a9a; }
-  .act.undo { background: #fff3ec; border-color: #ffc9a6; color: var(--ink); }
-  .act.undo .pts { color: #e06c22; font-size: 15px; }
+  .act .pts { font: 500 14px var(--mono); color: var(--accent); white-space: nowrap; }
+  .act.done { background: var(--soft); color: var(--muted); }
+  .act.done .ico { background: var(--accent); color: var(--on-accent); }
+  .act.done .lbl { text-decoration: line-through; text-decoration-color: var(--edge); }
+  .act.done .pts { color: var(--muted); font-family: inherit; font-size: 13px; }
+  .act.undo { background: var(--warn-soft); border-color: var(--warn); color: var(--ink); }
+  .act.undo .pts { color: var(--warn); font-size: 14px; }
+  :root[data-theme=night] .act.done .ico { box-shadow: 0 0 14px rgba(255,138,61,.45); }
 
   .log { font-size: 14px; }
-  .log div { padding: 7px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; }
+  .log div { padding: 9px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 8px; }
   .log div:last-child { border-bottom: 0; }
+  .log .muted { font-family: var(--mono); font-size: 12px; white-space: nowrap; }
 
   .rank { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .rank:last-child { border-bottom: 0; }
-  .rank .no { width: 28px; text-align: center; font-weight: 800; color: var(--muted); font-size: 18px; }
+  .rank .no { width: 28px; text-align: center; font: 600 16px var(--mono); color: var(--muted); }
   .rank .info { flex: 1; min-width: 0; }
   .rank .tname { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rank .mem { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rank .right { text-align: right; }
-  .rank .pts { font-weight: 800; font-size: 20px; }
-  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--cream); color: #a0692b; white-space: nowrap; }
-  .rank.mine { background: #f3faef; margin: 0 -18px; padding: 12px 18px; }
-  .home-grid { display: flex; flex-direction: column; gap: 12px; }
-  .pen { display: flex; align-items: stretch; background: var(--card); border-radius: 18px; overflow: hidden; box-shadow: 0 2px 10px rgba(60,80,40,.07); border: 2.5px solid transparent; }
-  .pen.mine { border-color: var(--green); box-shadow: 0 4px 14px rgba(107,191,110,.25); }
+  .rank .pts { font: 600 20px var(--mono); }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  .rank.mine { background: var(--accent-soft); margin: 0 -18px; padding: 12px 18px; }
+  .home-grid { display: flex; flex-direction: column; gap: 10px; }
+  .pen { display: flex; align-items: stretch; background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--edge); }
+  .pen.mine { border: 1.5px solid var(--accent); }
+  :root[data-theme=night] .pen.mine { box-shadow: 0 0 0 1px var(--accent), 0 6px 24px rgba(255,138,61,.18); }
   .pen-field { position: relative; width: 48%; max-width: 180px; flex-shrink: 0; min-height: 150px; }
-  .pen-rank { position: absolute; top: 6px; left: 8px; font-size: 20px; font-weight: 800; color: var(--muted); z-index: 200; display: flex; align-items: center; gap: 6px; }
+  .pen-rank { position: absolute; top: 8px; left: 8px; z-index: 200; display: flex; align-items: center; gap: 6px; }
+  .pen-rank .no { min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px; display: inline-grid; place-items: center; font: 600 13px var(--mono); background: rgba(255,255,255,.88); color: #1d1d1b; }
+  .pen-rank .no.top { background: var(--accent); color: var(--on-accent); }
   .pen-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; }
   .pen-name { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 17px; min-width: 0; }
   .pen-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pen-mem { font-size: 13px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pen-foot { display: flex; align-items: center; gap: 4px; margin-top: 10px; }
-  .pen-foot b { margin-left: auto; font-size: 24px; white-space: nowrap; }
-  .pen-foot small { font-size: 12px; color: var(--muted); font-weight: 500; }
-  .pen-me { font-size: 11px; background: var(--green); color: #fff; border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
-  .avatar.xs { width: 26px; height: 26px; font-size: 15px; border-width: 2px; }
+  .pen-foot b { margin-left: auto; font: 500 22px var(--mono); white-space: nowrap; }
+  .pen-foot small { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .pen-me { font-size: 11px; background: var(--accent); color: var(--on-accent); border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+  .avatar.xs { width: 26px; height: 26px; font-size: 15px; }
 
-  .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--tabs-bg); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--edge); display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
   .tabs .inner { display: flex; width: 100%; max-width: 480px; }
-  .tabs button { flex: 1; background: none; padding: 10px 0 12px; color: var(--muted); font-size: 13px; }
-  .tabs button .ti { display: block; width: fit-content; margin: 0 auto 2px; font-size: 24px; position: relative; }
-  .tab-badge { position: absolute; top: -5px; left: 70%; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #e8574f; color: #fff; font-size: 11px; font-weight: 800; line-height: 18px; text-align: center; border: 2px solid #fff; font-style: normal; }
-  .act .per { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #e7f3ff; color: #3d7fc4; font-size: 11px; font-weight: 700; vertical-align: 2px; }
-  .act.done .per { background: #ececec; color: #9a9a9a; }
-  .tabs button.on { color: var(--green-dark); font-weight: 700; }
+  .tabs button { flex: 1; background: none; padding: 9px 0 11px; color: var(--muted); font-size: 11.5px; }
+  .tabs button .ti { display: block; width: fit-content; margin: 0 auto 3px; position: relative; line-height: 0; }
+  .tabs button .ti .ic { width: 25px; height: 25px; stroke-width: 1.6; }
+  .tab-badge { position: absolute; top: -4px; left: 72%; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #e8574f; color: #fff; font-size: 11px; font-weight: 800; line-height: 15px; text-align: center; border: 1.5px solid var(--bg); font-style: normal; }
+  .act .per { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--info-soft); color: var(--info); font-size: 11px; font-weight: 600; vertical-align: 2px; text-decoration: none; }
+  .act.done .per { background: var(--line); color: var(--muted); }
+  .tabs button.on { color: var(--accent); font-weight: 700; }
+  .tabs button.on .ti .ic { stroke-width: 2.1; }
+  :root[data-theme=night] .tabs button.on .ti .ic { filter: drop-shadow(0 0 6px rgba(255,138,61,.6)); }
 
-  .toast { position: fixed; left: 50%; top: 20px; transform: translate(-50%, -150%); background: rgba(40,50,40,.92); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 15px; transition: transform .3s, opacity .3s; opacity: 0; pointer-events: none; z-index: 50; max-width: 90vw; text-align: center; }
+  .toast { position: fixed; left: 50%; top: 20px; transform: translate(-50%, -150%); background: rgba(29,29,27,.94); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 15px; transition: transform .3s, opacity .3s; opacity: 0; pointer-events: none; z-index: 50; max-width: 90vw; text-align: center; }
+  :root[data-theme=night] .toast { background: rgba(241,240,246,.95); color: #16171e; }
   .toast.show { transform: translate(-50%, 0); opacity: 1; }
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 40; padding: 16px; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 40; padding: 16px; }
   .modal .card { width: 100%; max-width: 360px; text-align: center; animation: pop .4s; }
   @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .invite { border: 2px solid #ffd98a; background: #fffbf0; }
+  .invite { border: 1px solid var(--hi-edge); background: var(--hi); }
   .row2 { display: flex; gap: 10px; }
   .row2 .btn { margin-top: 12px; }
-  .small-btn.on { background: var(--green-dark); }
-  .lb-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 20; box-shadow: 0 -4px 14px rgba(0,0,0,.06); }
+  .small-btn.on { background: var(--accent-strong); }
+  .lb-bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--tabs-bg); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--edge); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 20; }
   .lb-bar .inner { max-width: 448px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   .lb-bar .small-btn { padding: 10px 18px; font-size: 16px; }
-  .chat-list { max-height: 320px; min-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #f8faf3; border-radius: 14px; }
+  .chat-list { max-height: 320px; min-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: var(--soft); border-radius: 12px; }
   .chat-empty { margin: auto; color: var(--muted); font-size: 14px; text-align: center; }
   .msg { max-width: 80%; align-self: flex-start; }
   .msg.me { align-self: flex-end; text-align: right; }
   .msg .who { font-size: 12px; color: var(--muted); margin: 0 6px 3px; }
-  .msg .bub { display: inline-block; text-align: left; padding: 8px 12px; border-radius: 16px 16px 16px 4px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
-  .msg.me .bub { background: var(--green); border-color: var(--green); color: #fff; border-radius: 16px 16px 4px 16px; }
-  .msg .time { font-size: 11px; color: var(--muted); margin: 2px 6px 0; }
+  .msg .bub { display: inline-block; text-align: left; padding: 8px 12px; border-radius: 16px 16px 16px 4px; background: var(--card); border: 1px solid var(--edge); font-size: 15px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+  .msg.me .bub { background: var(--accent); border-color: var(--accent); color: var(--on-accent); border-radius: 16px 16px 4px 16px; }
+  .msg .time { font: 11px var(--mono); color: var(--muted); margin: 2px 6px 0; }
   .chat-form { display: flex; gap: 8px; margin-top: 10px; }
   .chat-form input { flex: 1; min-width: 0; }
   .chat-form .small-btn { padding: 0 18px; font-size: 16px; border-radius: 12px; }
-  .push-banner { display: flex; align-items: center; gap: 8px; background: #fff7e6; border: 1.5px solid #ffd98a; border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.45; }
+  .push-banner { display: flex; align-items: center; gap: 8px; background: var(--hi); border: 1px solid var(--hi-edge); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.45; }
+  .push-banner > .ic { color: var(--hi-ink); }
   .push-banner span { flex: 1; }
   .push-banner .small-btn { flex-shrink: 0; }
   .push-banner .pb-x { background: none; color: var(--muted); font-size: 16px; padding: 4px; flex-shrink: 0; }
@@ -208,67 +246,70 @@
   .sheep-svg .sh-bob .armor-piece.fit { object-fit: contain; filter: drop-shadow(0 1px 1.5px rgba(60,40,20,.3)); }
   .msn-wait { text-align: center; padding: 14px 0 6px; }
   .msn-wait .big { font-size: 46px; animation: sh-float 3s ease-in-out infinite; }
+  .msn-wait .big .ic { width: 48px; height: 48px; stroke-width: 1.4; color: var(--accent); }
   .msn-wait b { display: block; font-size: 19px; margin: 6px 0 4px; }
   .dots i { font-style: normal; animation: dot-blink 1.4s infinite; }
   .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
   @keyframes dot-blink { 0%, 60%, 100% { opacity: .2; } 30% { opacity: 1; } }
   .msn-top { display: flex; justify-content: space-between; align-items: center; }
-  .msn-tag { background: #e8574f; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
-  .msn-left { font-weight: 800; color: #e06c22; font-variant-numeric: tabular-nums; }
-  .msn-title { font-size: 21px; font-weight: 800; margin: 12px 0 8px; line-height: 1.4; }
-  .msn-done { margin-top: 14px; padding: 12px; border-radius: 14px; background: #fff4d6; border: 2px solid #f6c95e; text-align: center; font-weight: 800; font-size: 17px; }
-  .btn.confirm { background: #e06c22; }
-  .ticket-row { font-size: 16px; margin-bottom: 6px; } .ticket-row b { font-size: 22px; color: #e06c22; }
+  .msn-tag { background: var(--warn); color: var(--on-accent); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .msn-left { display: inline-flex; align-items: center; gap: 5px; font: 600 14px var(--mono); color: var(--warn); font-variant-numeric: tabular-nums; }
+  .msn-title { font-size: 21px; font-weight: 700; margin: 12px 0 8px; line-height: 1.4; }
+  .msn-done { margin-top: 14px; padding: 12px; border-radius: 14px; background: var(--hi); border: 1px solid var(--hi-edge); color: var(--hi-ink); text-align: center; font-weight: 700; font-size: 17px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn.confirm { background: var(--warn); }
+  .ticket-row { font-size: 16px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; } .ticket-row b { font: 600 22px var(--mono); color: var(--warn); }
+  .ticket-row .ic { color: var(--warn); }
   .wheel-box { max-width: 300px; margin: 0 auto; }
   .wheel-svg { display: block; width: 100%; height: auto; }
   #wheelRot { transform-origin: 0 0; transform-box: view-box; }
-  .armor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-  .armor-slot { background: #f6f7f1; border-radius: 14px; padding: 8px 4px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .armor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .armor-slot { background: var(--soft); border: 1px solid var(--edge); border-radius: 14px; padding: 8px 4px; text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); }
   .armor-slot img { display: block; width: 64px; height: 64px; object-fit: contain; margin: 0 auto 4px; filter: grayscale(1) brightness(1.3); opacity: .25; }
-  .armor-slot.on { background: #fff8e6; color: var(--ink); box-shadow: inset 0 0 0 2px #f6c95e; }
+  .armor-slot.on { background: var(--hi); color: var(--ink); border-color: var(--hi-edge); }
   .armor-slot.on img { filter: none; opacity: 1; }
   .prize-img { width: 150px; height: 150px; object-fit: contain; display: block; margin: 8px auto 0; animation: pop .5s; }
-  .tabs button { font-size: 12px; }
-  /* 美地植物：羊旁邊的小花園 */
-  /* 美地植物：羊站在一片小草原上，樹在後面、花草在四周，越近越大 */
+  /* 美地植物：羊站在一片小草原上，樹在後面、花草在四周，越近越大；晚上變成星空下的草原 */
   .meadow { position: relative; overflow: hidden; isolation: isolate; }
   .meadow > svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .meadow > svg.scene .night { display: var(--m-night); }
   .meadow .pl { position: absolute; transform: translateX(-50%); pointer-events: none; }
   .meadow .pl img { display: block; height: 100%; width: auto; filter: drop-shadow(0 2px 1.5px rgba(40,60,20,.25)); animation: sway 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
+  :root[data-theme=night] .meadow .pl img, :root[data-theme=night] .meadow .sheep-svg { filter: brightness(.92) drop-shadow(0 0 8px rgba(255,214,150,.18)); }
   .meadow .pl.tree img { animation-duration: 5s; }
   .meadow .sheep-spot { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); z-index: 93; }
   .meadow .sheep-spot .sheep-svg { display: block; }
   @keyframes sway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
   .pen-scene { position: absolute; inset: 0; }
-  .meadow-mine { height: 290px; margin: 4px -6px 0; border-radius: 16px; }
-  .garden-count { font-size: 13px; color: var(--green-dark); margin-top: 8px; }
-  .land-plant { display: flex; align-items: center; gap: 10px; background: #f3faef; border-radius: 14px; padding: 10px 12px; margin-bottom: 14px; font-size: 14px; }
+  .meadow-mine { height: 290px; margin: 4px -6px 0; border-radius: 12px; border: 1px solid var(--edge); }
+  .garden-count { display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 13px; color: var(--accent); margin-top: 10px; }
+  .land-plant { display: flex; align-items: center; gap: 10px; background: var(--accent-soft); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; }
   .land-plant img { height: 46px; }
+  .land-plant > .ic { width: 30px; height: 30px; color: var(--accent); }
   .land-past .land-date img { height: 30px; vertical-align: middle; margin-left: 6px; }
   .plant-big { height: 150px; display: block; margin: 8px auto 0; animation: pop .5s; }
   /* 語音輸入按鈕 */
   .mic-wrap { position: relative; }
   .mic-wrap input[type=text], .mic-wrap textarea { padding-right: 46px; }
-  .mic-btn { position: absolute; right: 6px; bottom: 6px; width: 36px; height: 36px; border-radius: 50%; background: #eef6e8; font-size: 17px; line-height: 36px; padding: 0; text-align: center; }
+  .mic-btn { position: absolute; right: 6px; bottom: 6px; width: 36px; height: 36px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); padding: 0; display: grid; place-items: center; }
+  .mic-btn .ic { width: 18px; height: 18px; }
   .mic-wrap input[type=text] + .mic-btn { top: 50%; bottom: auto; transform: translateY(-50%); }
-  .mic-btn.on { background: #e5534b; box-shadow: 0 0 0 0 rgba(229,83,75,.5); animation: micpulse 1.2s infinite; }
+  .mic-btn.on { background: #e5534b; color: #fff; box-shadow: 0 0 0 0 rgba(229,83,75,.5); animation: micpulse 1.2s infinite; }
   @keyframes micpulse { 0% { box-shadow: 0 0 0 0 rgba(229,83,75,.5); } 100% { box-shadow: 0 0 0 12px rgba(229,83,75,0); } }
   /* 我的美地 */
   .land-date { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .land-date h2 { margin: 0; }
-  .land-status { font-size: 13px; color: var(--muted); }
+  .land-status { font: 12px var(--mono); color: var(--muted); }
   .land-status.err { color: var(--danger); }
-  textarea.land-in { width: 100%; padding: 12px 14px; font: inherit; font-size: 16px; border: 1.5px solid var(--line); border-radius: 12px;
-    background: #fbfcf8; color: var(--ink); outline: none; resize: vertical; min-height: 52px; line-height: 1.5; }
-  textarea.land-in:focus { border-color: var(--green); }
-  .land-verse textarea.land-in { min-height: 84px; background: var(--cream); border-color: #f3e2bd; }
+  textarea.land-in { width: 100%; padding: 12px 14px; font: inherit; font-size: 16px; border: 1px solid var(--edge); border-radius: 12px;
+    background: var(--field); color: var(--ink); outline: none; resize: vertical; min-height: 52px; line-height: 1.5; }
+  .land-verse textarea.land-in { min-height: 84px; background: var(--hi); border-color: var(--hi-edge); }
   .land-item h3 { font-size: 16px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
-  .land-item h3 .num { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: #fff; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+  .land-item h3 .num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 600 13px var(--mono); display: inline-flex; align-items: center; justify-content: center; }
   .land-item .row { display: grid; grid-template-columns: minmax(0, 124px) minmax(0, 1fr); gap: 8px; }
   .land-item .row > div { min-width: 0; }
   /* iPhone 的時間欄位預設比格子寬，會蓋到旁邊的事件欄位：拿掉系統外觀、讓它乖乖縮在格子裡 */
   .land-item input[type=time] { display: block; width: 100%; min-width: 0; max-width: 100%; height: 49px; min-height: 49px; line-height: 46px; padding: 0 6px; font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; font-size: 16px; font-weight: 400;
-    border: 1.5px solid var(--line); border-radius: 12px; background: #fbfcf8; color: var(--ink); outline: none;
+    border: 1px solid var(--edge); border-radius: 12px; background: var(--field); color: var(--ink); outline: none;
     -webkit-appearance: none; appearance: none; text-align: center; }
   /* iPhone：時間字會黏在上面、字型也跟旁邊不一樣，這裡固定高度、垂直置中，字型跟事件欄位一樣 */
   .land-item input[type=time]::-webkit-date-and-time-value { text-align: center; margin: 0; line-height: 46px; min-height: 46px;
@@ -280,11 +321,12 @@
   .land-item input[type=time]::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
   .land-item input[type=text] { min-width: 0; height: 49px; }
   .land-item label { margin-top: 10px; }
-  .land-past { border-left: 4px solid #cfe5c8; }
-  .land-past .verse { background: var(--cream); border-radius: 12px; padding: 10px 12px; margin: 8px 0 4px; white-space: pre-wrap; line-height: 1.55; }
+  .land-past { border-left: 3px solid var(--accent); }
+  .land-past .verse { display: flex; gap: 8px; background: var(--hi); border-radius: 12px; padding: 10px 12px; margin: 8px 0 4px; white-space: pre-wrap; line-height: 1.55; }
+  .land-past .verse .ic { color: var(--hi-ink); margin-top: 3px; }
   .land-past .ev { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .land-past .ev:last-child { border-bottom: 0; padding-bottom: 0; }
-  .land-past .ev .t { font-size: 13px; color: var(--green-dark); font-weight: 700; margin-right: 6px; }
+  .land-past .ev .t { font: 600 13px var(--mono); color: var(--accent); margin-right: 6px; }
   .land-past .ev .res { margin-top: 4px; color: var(--ink); white-space: pre-wrap; }
   .land-past .ev .res::before { content: "結果："; color: var(--muted); font-size: 14px; }
   .land-empty { text-align: center; color: var(--muted); padding: 8px 0 20px; font-size: 14px; }
@@ -295,11 +337,11 @@
 <div class="app" id="app"></div>
 <nav class="tabs hidden" id="tabs">
   <div class="inner">
-    <button data-tab="mine"><span class="ti">🐑<span class="tab-badge hidden" id="chatBadge"></span></span>我們的羊圈</button>
-    <button data-tab="home"><span class="ti">🏡</span>羊咩咩的家</button>
-    <button data-tab="mission"><span class="ti">🎯<span class="tab-badge dot hidden" id="missionBadge">!</span></span>羊羊出任務</button>
-    <button data-tab="land"><span class="ti">🌾</span>我的美地</button>
-    <button data-tab="settings"><span class="ti">⚙️</span>設定</button>
+    <button data-tab="mine"><span class="ti"><i data-ic="sheep"></i><span class="tab-badge hidden" id="chatBadge"></span></span>我們的羊圈</button>
+    <button data-tab="home"><span class="ti"><i data-ic="house"></i></span>羊咩咩的家</button>
+    <button data-tab="mission"><span class="ti"><i data-ic="target"></i><span class="tab-badge dot hidden" id="missionBadge">!</span></span>羊羊出任務</button>
+    <button data-tab="land"><span class="ti"><i data-ic="sprout"></i></span>我的美地</button>
+    <button data-tab="settings"><span class="ti"><i data-ic="sliders"></i></span>設定</button>
   </div>
 </nav>
 <div class="toast" id="toast"></div>
@@ -315,6 +357,49 @@ const $tabs = document.getElementById("tabs");
 
 // ---------- 工具
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// 白天（6:00～18:00）用紙張風，晚上用夜光風
+function applyTheme() {
+  const h = new Date().getHours(), night = h >= 18 || h < 6;
+  document.documentElement.dataset.theme = night ? "night" : "day";
+  document.querySelector('meta[name="theme-color"]').content = night ? "#0d0e13" : "#ecebe5";
+}
+applyTheme();
+setInterval(applyTheme, 5 * 60 * 1000);
+
+// 線條圖示（24×24、跟著文字顏色），取代介面上的 emoji
+const ICONS = {
+  sheep: '<path d="M13.6 8.6a2.9 2.9 0 0 0-4.3-.6 2.9 2.9 0 0 0-4.6 2.4 2.7 2.7 0 0 0 .9 5.4h7.3"/><ellipse cx="17" cy="11.6" rx="3.3" ry="3.8"/><path d="M14 10.2l-2.3-.9M20 10.2l1.8-.9"/><path d="M16 11.4h.01M18 11.4h.01"/><path d="M8 15.8v3.7M12.5 15.8v3.7"/>',
+  house: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-5.5h4V20"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.2"/>',
+  sprout: '<path d="M12 20v-7.5"/><path d="M12 12.5c0-3.6 2.3-6 6.5-6 0 3.6-2.3 6-6.5 6z"/><path d="M12 14.5c0-3-2-5.2-5.5-5.2 0 3 2 5.2 5.5 5.2z"/><path d="M7 20h10"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  church: '<path d="M12 2.5v4M10.2 4.3h3.6"/><path d="M6.5 11 12 6.5l5.5 4.5"/><path d="M7.5 10v10.5h9V10"/><path d="M10.5 20.5V17a1.5 1.5 0 0 1 3 0v3.5"/><path d="M3.5 20.5h17"/>',
+  voice: '<path d="M4 10v4h3.2L12 17.8V6.2L7.2 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.5a7.8 7.8 0 0 1 0 11"/>',
+  book: '<path d="M12 7.2v13"/><path d="M12 7.2C10.3 5.8 7.6 5.2 3.5 5.2v13c4.1 0 6.8.6 8.5 2 1.7-1.4 4.4-2 8.5-2v-13c-4.1 0-6.8.6-8.5 2z"/>',
+  users: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.2 20c0-3.3 2.6-5.8 5.8-5.8s5.8 2.5 5.8 5.8"/><path d="M15.5 5.5a3.2 3.2 0 0 1 0 6.2"/><path d="M17.5 14.6c2 .7 3.3 2.7 3.3 5.4"/>',
+  candle: '<path d="M8.5 11h7v9.5h-7z"/><path d="M12 11V9"/><path d="M12 3.2c1.6 1.9 2.2 3 2.2 3.8a2.2 2.2 0 0 1-4.4 0c0-.8.6-1.9 2.2-3.8z"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/>',
+  chat: '<path d="M20 15a2 2 0 0 1-2 2H8.5L4 20.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M8.5 9.5h7M8.5 12.5h4.5"/>',
+  bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  shield: '<path d="M12 3 19.5 6v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
+  wheel: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2"/><path d="M12 3.5V10M12 14v6.5M3.5 12H10M14 12h6.5M6 6l4.6 4.6M13.4 13.4 18 18M18 6l-4.6 4.6M10.6 13.4 6 18"/>',
+  ticket: '<path d="M3.5 8.5V6.5h17v2a2.5 2.5 0 0 0 0 5v2h-17v-2a2.5 2.5 0 0 0 0-5z" transform="translate(0 1)"/><path d="M14.5 7.5v10" stroke-dasharray="1.6 2"/>',
+  send: '<path d="M20.5 3.5 10 14"/><path d="m20.5 3.5-6.5 17-4-6.5-6.5-4z"/>',
+  mail: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/>',
+  sad: '<circle cx="12" cy="12" r="8.5"/><path d="M9 10h.01M15 10h.01"/><path d="M8.8 16.2c1.7-1.7 4.7-1.7 6.4 0"/>',
+  check: '<path d="m5 12.5 4.2 4.2L19 7"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  refresh: '<path d="M19.5 11.5a7.5 7.5 0 1 0-2.2 5.8"/><path d="M20 4.5v6h-6"/>',
+  camera: '<path d="M4 8.5h3l1.8-2.5h6.4L17 8.5h3v10.5H4z"/><circle cx="12" cy="13.5" r="3.3"/>',
+  history: '<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/><path d="M12 8v4.2l2.8 1.8"/>',
+  party: '<path d="M4.5 19.5 9 7l8 8z"/><path d="M14 4.5c.6 1-.2 2.1.4 3.1M18.5 9.5c-1-.6-2.1.2-3.1-.4M18 4.5h.01M20 7h.01M14.5 2.5h.01"/>',
+  hourglass: '<path d="M7 3.5h10M7 20.5h10"/><path d="M8 3.5c0 4 4 4.8 4 8.5s-4 4.5-4 8.5M16 3.5c0 4-4 4.8-4 8.5s4 4.5 4 8.5"/>',
+};
+const ic = (name, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+// 五個加分項目的圖示（後端設定裡的 emoji 只在找不到對應時才用）
+const ACT_ICON = { sunday: "church", call: "voice", bible: "book", group: "users", prayer: "candle" };
+document.querySelectorAll("i[data-ic]").forEach(el => { el.outerHTML = ic(el.dataset.ic); });
 
 // 登入憑證存在手機瀏覽器裡
 const getToken = () => { try { return localStorage.getItem("lamb_token") || ""; } catch { return ""; } };
@@ -506,7 +591,7 @@ function wheelSvg(list, owned) {
 async function renderMission() {
   if (!document.getElementById("missionPage")) {
     $app.innerHTML = `<div id="missionPage">
-      <div class="hero" style="padding:8px 0 12px"><h1>🎯 羊羊出任務</h1>
+      <div class="hero" style="padding:8px 0 12px"><h1>${ic("target")}羊羊出任務</h1>
         <div class="muted">「所以要拿起神全副的軍裝」（弗 6:13）</div></div>
       <div class="card" id="msnCard"><div class="muted center">載入中…</div></div>
       <div class="card" id="raffleCard"></div>
@@ -523,26 +608,26 @@ async function renderMission() {
   // ---- 任務卡
   const card = document.getElementById("msnCard");
   if (!state.team) {
-    card.innerHTML = `<div class="msn-wait"><div class="big">🐑</div><b>組隊之後就能一起出任務囉！</b></div>`;
+    card.innerHTML = `<div class="msn-wait"><div class="big">${ic("sheep")}</div><b>組隊之後就能一起出任務囉！</b></div>`;
   } else if (!m) {
-    card.innerHTML = `<div class="msn-wait"><div class="big">⏳</div><b>等待中<span class="dots"><i>.</i><i>.</i><i>.</i></span></b>
+    card.innerHTML = `<div class="msn-wait"><div class="big">${ic("hourglass")}</div><b>等待中<span class="dots"><i>.</i><i>.</i><i>.</i></span></b>
       <div class="muted">任務發佈後會出現在這裡（有開通知的話手機也會收到）</div></div>`;
   } else {
     const endAt = Date.now() + m.secondsLeft * 1000;
     card.innerHTML = `
-      <div class="msn-top"><span class="msn-tag">限時任務</span><span class="msn-left" id="msnLeft">⏰ 剩下 ${fmtLeft(m.secondsLeft)}</span></div>
+      <div class="msn-top"><span class="msn-tag">限時任務</span><span class="msn-left" id="msnLeft">${ic("clock")}剩下 ${fmtLeft(m.secondsLeft)}</span></div>
       <div class="msn-title">${esc(m.title)}</div>
-      <div class="msn-members">${m.members.map(x => `<span class="chip">${x.done ? "✅" : "⏳"} ${esc(x.name)}</span>`).join("")}</div>
-      ${m.teamDone ? `<div class="msn-done">🎉 全組完成！獲得一張抽獎券</div>`
+      <div class="msn-members">${m.members.map(x => `<span class="chip${x.done ? " ok" : ""}">${ic(x.done ? "check" : "hourglass")}${esc(x.name)}</span>`).join("")}</div>
+      ${m.teamDone ? `<div class="msn-done">${ic("party")}全組完成！獲得一張抽獎券</div>`
         : m.iDone ? `<button class="btn" disabled>✓ 你已完成，等待組員…</button>`
-        : `<button class="btn" id="msnBtn">我完成了 ✅</button>`}
-      <div class="muted" style="margin-top:8px">小組每個人都按「完成」，就能得到一張抽獎券 🎟️</div>`;
+        : `<button class="btn" id="msnBtn">${ic("check")}我完成了</button>`}
+      <div class="muted" style="margin-top:8px">小組每個人都按「完成」，就能得到一張抽獎券</div>`;
     clearInterval(countdownTimer);
     countdownTimer = setInterval(() => {
       const left = Math.max(0, Math.round((endAt - Date.now()) / 1000));
       const el = document.getElementById("msnLeft");
       if (!el) return clearInterval(countdownTimer);
-      el.textContent = `⏰ 剩下 ${fmtLeft(left)}`;
+      el.innerHTML = `${ic("clock")}剩下 ${fmtLeft(left)}`;
       if (!left) { clearInterval(countdownTimer); renderMission(); }
     }, 1000);
     const btn = document.getElementById("msnBtn");
@@ -559,8 +644,8 @@ async function renderMission() {
 
   // ---- 抽獎輪盤
   document.getElementById("raffleCard").innerHTML = `
-    <h2>🎡 裝備抽獎輪盤</h2>
-    <div class="ticket-row">🎟️ 抽獎券 <b>${st.tickets}</b> 張</div>
+    <h2>${ic("wheel")}裝備抽獎輪盤</h2>
+    <div class="ticket-row">${ic("ticket")}抽獎券 <b>${st.tickets}</b> 張</div>
     <div class="wheel-box">${wheelSvg(st.prizeList, st.prizes)}</div>
     <button class="btn" id="spinBtn" ${st.tickets && state.team ? "" : "disabled"}>${st.tickets ? "轉動輪盤抽裝備！" : "完成任務就能得到抽獎券"}</button>
     <div class="muted" style="margin-top:8px">一張抽獎券抽一件裝備，會先從還沒有的裝備裡抽。</div>`;
@@ -585,7 +670,7 @@ async function renderMission() {
   // ---- 我們的裝備
   const owned = st.prizes;
   document.getElementById("armorCard").innerHTML = `
-    <h2>🛡️ 我們的裝備（${owned.length} / 6）</h2>
+    <h2>${ic("shield")}我們的裝備（${owned.length} / 6）</h2>
     ${state.team ? `<div class="center">${sheepSvg(state.team.stage, 170, owned)}</div>` : ""}
     <div class="armor-grid">${st.prizeList.map(p => `
       <div class="armor-slot ${owned.includes(p.key) ? "on" : ""}">
@@ -707,8 +792,8 @@ async function showPushBanner() {
   const el = document.createElement("div");
   el.id = "pushBanner"; el.className = "push-banner";
   el.innerHTML = st === "off"
-    ? `<span>🔔 開啟通知，組員傳訊息、邀請你時才不會錯過</span><button class="small-btn" data-on>開啟</button><button class="pb-x" data-x>✕</button>`
-    : `<span>🔔 想收到通知？${PUSH_TEXT["ios-home"]}</span><button class="pb-x" data-x>✕</button>`;
+    ? `${ic("bell")}<span>開啟通知，組員傳訊息、邀請你時才不會錯過</span><button class="small-btn" data-on>開啟</button><button class="pb-x" data-x>✕</button>`
+    : `${ic("bell")}<span>想收到通知？${PUSH_TEXT["ios-home"]}</span><button class="pb-x" data-x>✕</button>`;
   el.onclick = async e => {
     if (e.target.dataset.x !== undefined) { try { localStorage.setItem("lamb_push_banner_off", "1"); } catch {} return el.remove(); }
     if (e.target.dataset.on !== undefined) {
@@ -730,7 +815,7 @@ async function renderPushCard() {
     box.innerHTML = `<div>✅ 這支手機已開啟通知</div>${list}
       <button class="btn" data-test>傳一則測試通知給自己</button><button class="btn ghost" data-off>關閉這支手機的通知</button>`;
   } else if (st === "off") {
-    box.innerHTML = `<div>開啟後，就算沒打開 App，手機也會跳出通知。</div>${list}<button class="btn" data-on>開啟通知 🔔</button>`;
+    box.innerHTML = `<div>開啟後，就算沒打開 App，手機也會跳出通知。</div>${list}<button class="btn" data-on>${ic("bell")}開啟通知</button>`;
   } else {
     box.innerHTML = `<div>${PUSH_TEXT[st]}</div>${list}`;
   }
@@ -771,7 +856,7 @@ function avatarPicker(current, onChange) {
     <div class="emoji-grid" id="emojiGrid">
       ${EMOJIS.map(e => `<button type="button" data-e="${e}" class="${e === current ? "on" : ""}">${e}</button>`).join("")}
     </div>
-    <div class="center"><label class="upload">📷 或上傳照片<input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/heic" id="avFile"></label></div>`;
+    <div class="center"><label class="upload">${ic("camera")}或上傳照片<input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/heic" id="avFile"></label></div>`;
   const bind = () => {
     const set = v => {
       document.getElementById("avPreview").innerHTML = avatarHtml(v, "lg");
@@ -856,7 +941,7 @@ function teamFormed(r) {
   m.className = "modal";
   m.innerHTML = `<div class="card"><div style="font-size:15px" class="muted">三隻羊羊到齊了！</div>
     <div style="margin:14px 0">${avatarHtml(r.team.avatar, "lg")}</div>
-    <h1>「${esc(r.team.name)}」組隊成功 🎉</h1>
+    <h1>${ic("party")}「${esc(r.team.name)}」組隊成功</h1>
     <div class="muted">${r.team.members.map(x => esc(x.name)).join("、")}</div>
     <button class="btn">開始養小羊！</button></div>`;
   m.onclick = e => { if (e.target === m || e.target.tagName === "BUTTON") m.remove(); };
@@ -864,7 +949,7 @@ function teamFormed(r) {
 }
 
 function memberChips(members) {
-  return members.map(x => `<span class="chip">${x.accepted ? "✅" : "⏳"} ${esc(x.name)}</span>`).join("");
+  return members.map(x => `<span class="chip${x.accepted ? " ok" : ""}">${ic(x.accepted ? "check" : "hourglass")}${esc(x.name)}</span>`).join("");
 }
 
 function renderLobby() {
@@ -879,7 +964,7 @@ function renderLobby() {
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <h2 style="margin:0">還沒有組別的羊羊</h2>
-        <button class="link" id="lbRefresh">🔄 重新整理</button>
+        <button class="link" id="lbRefresh">${ic("refresh")}重新整理</button>
       </div>
       <input type="search" id="lbFilter" placeholder="搜尋暱稱" style="margin-top:10px">
       <div id="lbList" style="margin-top:6px"></div>
@@ -899,7 +984,7 @@ function renderLobby() {
     $in.innerHTML = L.incoming.map(inv => `
       <div class="card invite">
         <div class="team-head">${avatarHtml(inv.avatar, "sm")}
-          <div><div class="name" style="font-size:17px">📬 ${esc(inv.inviter)} 邀請你組隊</div>
+          <div><div class="name" style="font-size:17px">${ic("mail")} ${esc(inv.inviter)} 邀請你組隊</div>
           <div class="muted">組別名稱：「${esc(inv.teamName)}」</div></div></div>
         <div style="margin-top:8px">${memberChips(inv.members)}</div>
         ${inv.iAccepted
@@ -910,14 +995,14 @@ function renderLobby() {
     const o = L.outgoing;
     $out.innerHTML = !o ? "" : o.status === "pending" ? `
       <div class="card">
-        <h2>📤 你送出的邀請</h2>
+        <h2>${ic("send")}你送出的邀請</h2>
         <div class="team-head">${avatarHtml(o.avatar, "sm")}<div class="name" style="font-size:17px">「${esc(o.teamName)}」</div></div>
         <div style="margin-top:8px">${memberChips(o.members)}</div>
         <div class="muted" style="margin-top:8px">等待同伴按同意中…兩位都同意就會自動組隊</div>
         <button class="btn ghost" data-cancel="${o.id}">取消邀請</button>
       </div>` : `
       <div class="card invite">
-        <h2>😢 邀請沒有成功</h2>
+        <h2>${ic("sad")}邀請沒有成功</h2>
         <div>「${esc(o.teamName)}」：${esc(o.note)}，請重新邀請其他同伴。</div>
         <button class="btn" data-dismiss="${o.id}">知道了</button>
       </div>`;
@@ -931,7 +1016,7 @@ function renderLobby() {
         const btn = invited ? `<span class="muted">已邀請</span>`
           : pending ? ""
           : `<button class="small-btn ${on ? "on" : ""}" data-pick="${u.id}" ${!on && picked.size >= 2 ? "disabled" : ""}>${on ? "✓ 已選" : "選擇"}</button>`;
-        return `<div class="result"><span>🐑 ${esc(u.name)} <span class="muted">末三碼 ${esc(u.phoneTail)}</span></span>${btn}</div>`;
+        return `<div class="result"><span>${esc(u.name)} <span class="muted">末三碼 ${esc(u.phoneTail)}</span></span>${btn}</div>`;
       }).join("") : `<div class="muted" style="padding:10px 0">${q ? "找不到符合的羊羊" : "目前沒有其他還沒組隊的羊羊。請朋友先用手機號碼登入，就會出現在這裡！"}</div>`);
 
     const names = L.unassigned.filter(u => picked.has(u.id)).map(u => esc(u.name));
@@ -989,7 +1074,7 @@ function renderLobby() {
       <label>選一個頭像</label>
       ${picker.html}
       <div class="error" id="ivErr"></div>
-      <button class="btn" id="ivSend">送出邀請 📨</button>
+      <button class="btn" id="ivSend">${ic("send")}送出邀請</button>
       <button class="btn ghost" id="ivClose">取消</button></div>`;
     document.body.appendChild(m);
     picker.bind();
@@ -1006,7 +1091,7 @@ function renderLobby() {
         toast("邀請已送出，等待同伴同意！");
       } catch (err) {
         m.querySelector("#ivErr").textContent = err.message;
-        e.target.disabled = false; e.target.textContent = "送出邀請 📨";
+        e.target.disabled = false; e.target.innerHTML = `${ic("send")}送出邀請`;
       }
     };
   };
@@ -1032,7 +1117,7 @@ function renderMine() {
       </div>
       <div class="stage-box">
         ${meadowHtml(sheepSvg(stage, undefined, t.prizes), t.plants, "meadow-mine")}
-        ${t.plantCount ? `<div class="garden-count">🌱 這週的美地植物 ${t.plantCount} 株（每週一重新種）</div>` : ""}
+        ${t.plantCount ? `<div class="garden-count">${ic("sprout")}這週的美地植物 ${t.plantCount} 株（每週一重新種）</div>` : ""}
         <div class="stage-name">${stage}</div>
         <div class="score">${t.score}<small> / ${max} 分</small></div>
         <div class="bar"><div style="width:${(t.score / max) * 100}%"></div></div>
@@ -1047,14 +1132,14 @@ function renderMine() {
           const done = today || week, doneText = a.per === "week" ? "✓ 本週已完成" : "✓ 已完成";
           // 今天按的可以取消；這週稍早按的每週項目就鎖住
           return `<button class="act ${done ? "done" : ""} ${done && !today ? "locked" : ""}" data-act="${k}" data-done-text="${doneText}">
-            <span class="ico">${a.icon}</span><span class="lbl">${a.label}${a.per === "week" ? `<small class="per">每週一次</small>` : ""}</span>
+            <span class="ico">${ACT_ICON[k] ? ic(ACT_ICON[k]) : a.icon}</span><span class="lbl">${a.label}${a.per === "week" ? `<small class="per">每週一次</small>` : ""}</span>
             <span class="pts">${done ? doneText : "+" + a.points}</span></button>`;
         }).join("")}
       </div>
       <div class="muted" style="margin-top:10px">週日聚會、小排聚會每人<b>每週</b>可記錄一次（週一～週日），其他項目每天一次，分數會加到共同帳戶。<br>按錯了？當天再點兩下「已完成」就能取消。</div>
     </div>
     <div class="card">
-      <h2>💬 羊圈聊天室</h2>
+      <h2>${ic("chat")}羊圈聊天室</h2>
       <div class="chat-list" id="chatList"></div>
       <form class="chat-form" id="chatForm">
         <input type="text" maxlength="300" placeholder="跟組員說點什麼…" autocomplete="off" enterkeyhint="send">
@@ -1227,7 +1312,7 @@ function showEvolve(stage) {
 
 // ---------- 畫面：羊咩咩的家
 async function renderHome() {
-  $app.innerHTML = `<div class="hero" style="padding:8px 0 14px"><h1>🏡 羊咩咩的家</h1><div class="muted">大家的小羊都在這裡</div></div><div class="card" id="homeList"><div class="muted center">載入中…</div></div>`;
+  $app.innerHTML = `<div class="hero" style="padding:8px 0 14px"><h1>${ic("house")}羊咩咩的家</h1><div class="muted">大家的小羊都在這裡</div></div><div class="card" id="homeList"><div class="muted center">載入中…</div></div>`;
   try {
     const { teams } = await api("home");
     if (state.tab !== "home") return;
@@ -1237,7 +1322,7 @@ async function renderHome() {
     list.innerHTML = teams.length ? teams.map((t, i) => `
       <div class="pen ${t.id === state.team.id ? "mine" : ""}">
         <div class="pen-field meadow">
-          <span class="pen-rank">${["🥇", "🥈", "🥉"][i] || i + 1}${t.id === state.team.id ? `<span class="pen-me">我的組</span>` : ""}</span>
+          <span class="pen-rank"><span class="no${i < 3 ? " top" : ""}">${i + 1}</span>${t.id === state.team.id ? `<span class="pen-me">我的組</span>` : ""}</span>
           ${meadowHtml(sheepSvg(t.stage, Math.round((STAGE_SIZE[t.stage] || 120) * .68), t.prizes), t.plants, "pen-scene")}
         </div>
         <div class="pen-meta">
@@ -1271,7 +1356,7 @@ function renderSettings() {
       <button class="btn ghost" id="logoutBtn">登出</button>
     </div>
     <div class="card">
-      <h2>🔔 手機通知</h2>
+      <h2>${ic("bell")}手機通知</h2>
       <div id="pushBody" class="muted">檢查中…</div>
     </div>
     <div class="card">
@@ -1298,15 +1383,17 @@ const plantName = k => ((state.config.plants || []).find(p => p[0] === k) || [k,
 const plantImg = (k, cls = "") => `<img src="plants/${k}.png" alt="${esc(plantName(k))}" title="${esc(plantName(k))}" class="${cls}" draggable="false">`;
 // 小草原的背景：天空、雲、遠山、草地（以百分比畫，大小格子都能用）
 const MEADOW_SCENE = `<svg class="scene" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-  <defs><linearGradient id="mSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3f5"/><stop offset="1" stop-color="#e3f4fb"/></linearGradient>
-  <linearGradient id="mGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe39a"/><stop offset=".45" stop-color="#9fd171"/><stop offset="1" stop-color="#7fbd55"/></linearGradient></defs>
+  <defs><linearGradient id="mSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--m-sky1)"/><stop offset="1" style="stop-color:var(--m-sky2)"/></linearGradient>
+  <linearGradient id="mGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--m-grass1)"/><stop offset=".45" style="stop-color:var(--m-grass2)"/><stop offset="1" style="stop-color:var(--m-grass3)"/></linearGradient>
+  <radialGradient id="mMoon"><stop offset=".55" stop-color="#fff3c4"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></radialGradient></defs>
   <rect width="100" height="100" fill="url(#mSky)"/>
-  <g fill="#fff" opacity=".9"><ellipse cx="80" cy="14" rx="13" ry="5"/><ellipse cx="88" cy="11" rx="8" ry="5"/><ellipse cx="18" cy="20" rx="9" ry="3.5"/><ellipse cx="24" cy="17.5" rx="6" ry="3.5"/></g>
-  <path d="M0 52 L12 38 L22 46 L34 33 L47 45 L58 36 L70 47 L83 35 L100 49 L100 56 L0 56Z" fill="#a9c6e6" opacity=".85"/>
-  <path d="M0 55 Q14 47 28 52 T56 51 T84 50 T100 52 L100 60 L0 60Z" fill="#a6d389"/>
+  <g class="night"><g fill="#fff" opacity=".85"><circle cx="8" cy="8" r="0.45"/><circle cx="17" cy="15" r="0.35"/><circle cx="29" cy="6" r="0.5"/><circle cx="38" cy="13" r="0.35"/><circle cx="47" cy="4" r="0.4"/><circle cx="55" cy="17" r="0.3"/><circle cx="63" cy="9" r="0.45"/><circle cx="71" cy="20" r="0.35"/><circle cx="12" cy="27" r="0.3"/><circle cx="44" cy="24" r="0.35"/><circle cx="92" cy="30" r="0.3"/><circle cx="33" cy="30" r="0.25"/></g><ellipse cx="56" cy="11" rx="9" ry="6" fill="url(#mMoon)"/><ellipse cx="56" cy="11" rx="4.2" ry="2.8" fill="#fff6d6"/></g>
+  <g style="fill:var(--m-cloud)" opacity=".9"><ellipse cx="80" cy="14" rx="13" ry="5"/><ellipse cx="88" cy="11" rx="8" ry="5"/><ellipse cx="18" cy="20" rx="9" ry="3.5"/><ellipse cx="24" cy="17.5" rx="6" ry="3.5"/></g>
+  <path d="M0 52 L12 38 L22 46 L34 33 L47 45 L58 36 L70 47 L83 35 L100 49 L100 56 L0 56Z" style="fill:var(--m-mount)" opacity=".85"/>
+  <path d="M0 55 Q14 47 28 52 T56 51 T84 50 T100 52 L100 60 L0 60Z" style="fill:var(--m-hill)"/>
   <rect y="56" width="100" height="44" fill="url(#mGrass)"/>
-  <path d="M0 74 Q30 70 55 73 T100 72" stroke="#8cc663" stroke-width=".8" fill="none" opacity=".6"/>
-  <path d="M0 88 Q25 85 50 88 T100 87" stroke="#76b14c" stroke-width=".8" fill="none" opacity=".5"/>
+  <path d="M0 74 Q30 70 55 73 T100 72" style="stroke:var(--m-line1)" stroke-width=".8" fill="none" opacity=".6"/>
+  <path d="M0 88 Q25 85 50 88 T100 87" style="stroke:var(--m-line2)" stroke-width=".8" fill="none" opacity=".5"/>
 </svg>`;
 
 // 植物的固定位置（同一株每次都在同一個地方）：樹在後面靠近地平線，花草散在四周；中間留給羊
@@ -1371,7 +1458,7 @@ function landDateText(day) {
 // 語音輸入：按 🎤 開始說話，說的話會接在欄位後面；再按一次停止
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 let mic = null;  // { rec, btn, el }
-const micBtn = id => `<button type="button" class="mic-btn" data-for="${id}" aria-label="語音輸入" title="語音輸入">🎤</button>`;
+const micBtn = id => `<button type="button" class="mic-btn" data-for="${id}" aria-label="語音輸入" title="語音輸入">${ic("mic")}</button>`;
 
 function stopMic() {
   if (!mic) return;
@@ -1417,15 +1504,15 @@ function toggleMic(btn) {
 }
 
 function landPlantHtml(k) {
-  return k ? `${plantImg(k)}<div>今天種下了一株<b>${esc(plantName(k))}</b>，已經長在羊羊旁邊 🌱</div>`
-           : `<span style="font-size:30px">🌱</span><div>經節和三件事的<b>時間、事件、結果</b>都填好，就能隨機種下一株植物；有開通知的話，事件時間到了會提醒你</div>`;
+  return k ? `${plantImg(k)}<div>今天種下了一株<b>${esc(plantName(k))}</b>，已經長在羊羊旁邊</div>`
+           : `${ic("sprout")}<div>經節和三件事的<b>時間、事件、結果</b>都填好，就能隨機種下一株植物；有開通知的話，事件時間到了會提醒你</div>`;
 }
 
 function landPastHtml(p) {
   const evs = p.items.filter(i => i.time || i.event || i.result);
   return `<div class="card land-past">
     <div class="land-date"><h2>${landDateText(p.day)}${p.plant ? plantImg(p.plant) : ""}</h2></div>
-    ${p.verse ? `<div class="verse">📖 ${esc(p.verse)}</div>` : ""}
+    ${p.verse ? `<div class="verse">${ic("book")}<span>${esc(p.verse)}</span></div>` : ""}
     ${evs.map(i => `<div class="ev">
       <div>${i.time ? `<span class="t">${esc(i.time)}</span>` : ""}${esc(i.event) || '<span class="muted">（沒有寫事件）</span>'}</div>
       ${i.result ? `<div class="res">${esc(i.result)}</div>` : ""}
@@ -1494,12 +1581,12 @@ function drawLand() {
   stopMic();
   const L = state.land, e = L.entry;
   $app.innerHTML = `
-    <h1>🌾 我的美地</h1>
+    <h1>${ic("sprout")}我的美地</h1>
     <div class="muted" style="margin-bottom:14px">每天一頁，記下今天的經節和三件事</div>
     <div class="land-plant" id="landPlant">${landPlantHtml(e.plant)}</div>
     <div class="card land-verse">
       <div class="land-date"><h2>${landDateText(L.today)}</h2><span class="land-status" id="landStatus"></span></div>
-      <label for="landVerse" style="margin-top:0">📖 今天的經節或綱目</label>
+      <label for="landVerse" style="margin-top:0">${ic("book")}今天的經節或綱目</label>
       <div class="mic-wrap"><textarea class="land-in" id="landVerse" maxlength="300" placeholder="例：申命記 8:7 因為耶和華你神領你進入美地…">${esc(e.verse)}</textarea>${micBtn("landVerse")}</div>
     </div>
     ${LAND_NAMES.map((name, i) => `
@@ -1512,7 +1599,7 @@ function drawLand() {
       <label for="landResult${i}">結果</label>
       <div class="mic-wrap"><textarea class="land-in" id="landResult${i}" maxlength="200" placeholder="結果如何、有什麼感受">${esc(e.items[i].result)}</textarea>${micBtn(`landResult${i}`)}</div>
     </div>`).join("")}
-    <h2 style="margin:22px 0 10px">📜 之前的美地</h2>
+    <h2 style="margin:22px 0 10px">${ic("history")}之前的美地</h2>
     <div id="landPast">${L.history.length ? L.history.map(landPastHtml).join("") : '<div class="land-empty">還沒有之前的紀錄，明天就會看到今天寫的內容</div>'}</div>
     ${L.more ? '<button class="btn ghost" id="landMore">載入更早的紀錄</button>' : ""}`;
   $app.querySelectorAll("#landVerse, [id^=landTime], [id^=landEvent], [id^=landResult]").forEach(el => {
