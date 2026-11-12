@@ -1,0 +1,7 @@
+.DS_Store
+*.db
+*.db.bak*
+*.sql.bak
+匯入.sql
+push_keys.json
+.env

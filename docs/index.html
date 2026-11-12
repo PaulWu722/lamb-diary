@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7cc47f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="小羊日記">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>小羊長大日記</title>
+<style>
+  :root {
+    --bg: #f6f8ef;
+    --card: #ffffff;
+    --ink: #2f3a2f;
+    --muted: #7a857a;
+    --green: #6bbf6e;
+    --green-dark: #4a9a4e;
+    --cream: #fff7e6;
+    --line: #e6eadc;
+    --danger: #d9534f;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg); color: var(--ink);
+    min-height: 100vh; font-size: 16px;
+  }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 24px; margin: 8px 0 4px; }
+  h2 { font-size: 19px; margin: 0 0 12px; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(60,80,40,.06); }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 12px 0 6px; }
+  input[type=text], input[type=tel], input[type=password], input[type=search] {
+    width: 100%; padding: 13px 14px; font-size: 16px; border: 1.5px solid var(--line);
+    border-radius: 12px; background: #fbfcf8; color: var(--ink); outline: none;
+  }
+  input:focus { border-color: var(--green); }
+  button { font: inherit; cursor: pointer; border: 0; }
+  .btn { width: 100%; padding: 14px; border-radius: 14px; background: var(--green); color: #fff; font-weight: 600; font-size: 17px; margin-top: 16px; }
+  .btn:active { background: var(--green-dark); }
+  .btn:disabled { opacity: .5; }
+  .btn.ghost { background: transparent; color: var(--green-dark); border: 1.5px solid var(--green); }
+  .link { background: none; color: var(--green-dark); padding: 8px; font-size: 15px; }
+  .error { color: var(--danger); font-size: 14px; min-height: 20px; margin-top: 10px; }
+  .center { text-align: center; }
+  .hero { text-align: center; padding: 28px 0 12px; }
+  .hero .big { font-size: 72px; line-height: 1; }
+
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--cream); display: inline-flex; align-items: center; justify-content: center; font-size: 36px; overflow: hidden; flex-shrink: 0; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar.sm { width: 48px; height: 48px; font-size: 26px; }
+  .avatar.lg { width: 96px; height: 96px; font-size: 54px; }
+  .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .emoji-grid button { aspect-ratio: 1; font-size: 28px; border-radius: 12px; background: #f3f5ec; border: 2px solid transparent; }
+  .emoji-grid button.on { border-color: var(--green); background: #eaf6e6; }
+  .upload { display: inline-block; margin-top: 10px; color: var(--green-dark); font-size: 15px; }
+  .upload input { display: none; }
+
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: #eaf6e6; margin: 4px 6px 0 0; font-size: 14px; }
+  .chip button { background: none; color: var(--muted); font-size: 16px; padding: 0 2px; }
+  .result { display: flex; justify-content: space-between; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  .result:last-child { border-bottom: 0; }
+  .small-btn { padding: 7px 14px; border-radius: 999px; background: var(--green); color: #fff; font-size: 14px; }
+  .small-btn:disabled { background: #cfd6c6; }
+
+  .team-head { display: flex; gap: 14px; align-items: center; }
+  .team-head .name { font-size: 21px; font-weight: 700; }
+  .stage-box { text-align: center; padding: 10px 0 4px; }
+  .sheep-svg { position: relative; display: inline-block; vertical-align: bottom; cursor: pointer; flex-shrink: 0; }
+  .sheep-svg .sh-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .sheep-svg .sh-bob { position: absolute; inset: 0; display: block; transform-origin: 50% 97%; }
+  .sheep-svg .sh-bob img { display: block; width: 100%; height: 100%; -webkit-user-drag: none; user-select: none; -webkit-touch-callout: none; }
+  .sheep-svg .sh-breathe { position: absolute; inset: 0; display: block; transform-origin: 50% 97%; animation: sh-breathe var(--bd, 1s) ease-in-out infinite; }
+  @keyframes sh-breathe { 0%, 100% { transform: rotate(calc(var(--br, 0deg) * -1)) scale(1, 1); } 25% { transform: rotate(0deg) scale(var(--bx, 1), var(--by, 1)); }
+    50% { transform: rotate(var(--br, 0deg)) scale(1, 1); } 75% { transform: rotate(0deg) scale(calc(2 - var(--bx, 1)), calc(2 - var(--by, 1))); } }
+  .sheep-svg .sh-spark { animation: sh-twinkle 1.8s ease-in-out infinite; }
+  .sheep-svg .sh-say { animation: sh-say 6s ease-in-out infinite; }
+  /* 各等級的身體動作 */
+  .sheep-svg .sh-bob.m-rock { animation: sh-rock 1.6s ease-in-out infinite; }
+  .sheep-svg .sh-bob.m-hop { animation: sh-hop 1.1s ease-in-out infinite; }
+  .sheep-svg .sh-bob.m-jiggle { animation: sh-jiggle 1.3s ease-in-out infinite; }
+  .sheep-svg .sh-bob.m-side { animation: sh-side .52s ease-in-out infinite; }
+  .sheep-svg .sh-bob.m-burp { animation: sh-burp-body 3s ease-in-out infinite; }
+  .sheep-svg .sh-burp { animation: sh-burp-say 3s ease-out infinite; }
+  .sheep-svg .sh-bob.m-flex { animation: sh-bounce 1.4s ease-in-out infinite; }
+  .sheep-svg .sh-bob.m-cheer { animation: sh-cheer 1.2s ease-in-out infinite; }
+  .sheep-svg .sh-bob.m-float { animation: sh-float 3.2s ease-in-out infinite; }
+  /* 配件動作 */
+  .sheep-svg .sh-rays { animation: sh-spin 18s linear infinite; }
+  .sheep-svg .sh-sweat { animation: sh-sweat 1.6s ease-in infinite; }
+  .sheep-svg .sh-power { animation: sh-power .7s ease-in-out infinite; }
+  .sheep-svg .sh-rise { animation: sh-rise 2.4s ease-out infinite; }
+  .sheep-svg .sh-fall { animation: sh-fall 2.6s linear infinite; }
+  .sheep-svg.jump .sh-bob { animation: sh-jump .7s ease-out !important; }
+  @keyframes sh-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+  @keyframes sh-twinkle { 0%, 100% { transform: scale(.3); opacity: .2; } 50% { transform: scale(1.15); opacity: 1; } }
+  @keyframes sh-say { 0%, 55% { opacity: 0; transform: scale(.5); } 62%, 88% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(.8); } }
+  @keyframes sh-rock { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg) translateY(-1%); } }
+  @keyframes sh-hop { 0%, 100% { transform: translateY(0) scale(1.04, .96); } 40% { transform: translateY(-8%) scale(.98, 1.03); } 65% { transform: translateY(0) scale(1.05, .95); } }
+  @keyframes sh-side { 0%, 100% { transform: translate(-7%, 0) scale(1.04, .96); } 25% { transform: translate(0, -6.5%) scale(.97, 1.04); } 50% { transform: translate(7%, 0) scale(1.04, .96); } 75% { transform: translate(0, -6.5%) scale(.97, 1.04); } }
+  @keyframes sh-burp-body { 0%, 58%, 100% { transform: scale(1, 1); } 66% { transform: translateY(-3.5%) scale(.96, 1.05); } 72% { transform: scale(1.05, .95); } 80% { transform: scale(1, 1); } }
+  @keyframes sh-burp-say { 0%, 62% { opacity: 0; transform: scale(.3); } 70% { opacity: 1; transform: scale(1.15); } 76%, 92% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(.9); } }
+  @keyframes sh-jiggle { 0%, 100% { transform: scale(1, 1); } 25% { transform: scale(1.04, .96); } 50% { transform: scale(.98, 1.03); } 75% { transform: scale(1.02, .98); } }
+  @keyframes sh-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5%); } }
+  @keyframes sh-cheer { 0%, 100% { transform: translateY(0) scale(1, 1); } 30% { transform: translateY(-5%) scale(.98, 1.03); } 60% { transform: translateY(0) scale(1.03, .97); } }
+  @keyframes sh-float { 0%, 100% { transform: translateY(-2%); } 50% { transform: translateY(-7%); } }
+  @keyframes sh-spin { to { transform: rotate(360deg); } }
+  @keyframes sh-sweat { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 80% { transform: translateY(16px); opacity: 1; } 100% { transform: translateY(20px); opacity: 0; } }
+  @keyframes sh-power { 0%, 100% { opacity: .2; transform: scaleX(.6); } 50% { opacity: 1; transform: scaleX(1); } }
+  @keyframes sh-rise { 0% { transform: translateY(10px) scale(.5); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-46px) scale(1.1); opacity: 0; } }
+  @keyframes sh-fall { 0% { transform: translateY(-20px) rotate(0); opacity: 0; } 10% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(190px) rotate(540deg); opacity: 0; } }
+  @keyframes sh-jump { 0% { transform: translateY(0) scale(1.08, .9); } 35% { transform: translateY(-16%) scale(.95, 1.06); } 70% { transform: translateY(0) scale(1.06, .94); } 85% { transform: translateY(-2%) scale(.99, 1.01); } 100% { transform: translateY(0) scale(1, 1); } }
+  .heart-pop { position: fixed; z-index: 60; font-size: 24px; pointer-events: none; transform: translate(-50%, -50%); animation: heart-up 1s ease-out forwards; }
+  @keyframes heart-up { from { opacity: 1; transform: translate(-50%, -50%) scale(.6); } to { opacity: 0; transform: translate(-50%, -160%) scale(1.3); } }
+  @media (prefers-reduced-motion: reduce) { .sheep-svg *, .heart-pop { animation: none !important; } }
+  .stage-name { display: inline-block; margin-top: 8px; padding: 5px 14px; border-radius: 999px; background: var(--cream); font-weight: 700; color: #a0692b; }
+  .score { font-size: 40px; font-weight: 800; margin-top: 6px; }
+  .score small { font-size: 16px; color: var(--muted); font-weight: 500; }
+  .bar { height: 12px; background: #edf0e5; border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .bar > div { height: 100%; background: linear-gradient(90deg, #9bd88f, #6bbf6e); border-radius: 999px; transition: width .5s; }
+  .next { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  .acts { display: grid; gap: 10px; }
+  .act { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 16px; background: #f3f8ee; border: 2px solid #e2efd8; text-align: left; color: var(--ink); font-size: 17px; }
+  .act:active { transform: scale(.98); }
+  .act .ico { font-size: 28px; }
+  .act .lbl { flex: 1; font-weight: 600; }
+  .act .pts { font-weight: 800; color: var(--green-dark); }
+  .act.done { background: #f2f2f2; border-color: #e5e5e5; color: #9a9a9a; }
+  .act.done .pts { color: #9a9a9a; }
+  .act.undo { background: #fff3ec; border-color: #ffc9a6; color: var(--ink); }
+  .act.undo .pts { color: #e06c22; font-size: 15px; }
+
+  .log { font-size: 14px; }
+  .log div { padding: 7px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; }
+  .log div:last-child { border-bottom: 0; }
+
+  .rank { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .rank:last-child { border-bottom: 0; }
+  .rank .no { width: 28px; text-align: center; font-weight: 800; color: var(--muted); font-size: 18px; }
+  .rank .info { flex: 1; min-width: 0; }
+  .rank .tname { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank .mem { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank .right { text-align: right; }
+  .rank .pts { font-weight: 800; font-size: 20px; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--cream); color: #a0692b; white-space: nowrap; }
+  .rank.mine { background: #f3faef; margin: 0 -18px; padding: 12px 18px; }
+  .home-grid { display: flex; flex-direction: column; gap: 12px; }
+  .pen { display: flex; align-items: stretch; background: var(--card); border-radius: 18px; overflow: hidden; box-shadow: 0 2px 10px rgba(60,80,40,.07); border: 2.5px solid transparent; }
+  .pen.mine { border-color: var(--green); box-shadow: 0 4px 14px rgba(107,191,110,.25); }
+  .pen-field { position: relative; width: 48%; max-width: 180px; flex-shrink: 0; min-height: 150px; }
+  .pen-rank { position: absolute; top: 6px; left: 8px; font-size: 20px; font-weight: 800; color: var(--muted); z-index: 200; display: flex; align-items: center; gap: 6px; }
+  .pen-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; }
+  .pen-name { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 17px; min-width: 0; }
+  .pen-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pen-mem { font-size: 13px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pen-foot { display: flex; align-items: center; gap: 4px; margin-top: 10px; }
+  .pen-foot b { margin-left: auto; font-size: 24px; white-space: nowrap; }
+  .pen-foot small { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .pen-me { font-size: 11px; background: var(--green); color: #fff; border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+  .avatar.xs { width: 26px; height: 26px; font-size: 15px; border-width: 2px; }
+
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
+  .tabs .inner { display: flex; width: 100%; max-width: 480px; }
+  .tabs button { flex: 1; background: none; padding: 10px 0 12px; color: var(--muted); font-size: 13px; }
+  .tabs button .ti { display: block; width: fit-content; margin: 0 auto 2px; font-size: 24px; position: relative; }
+  .tab-badge { position: absolute; top: -5px; left: 70%; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #e8574f; color: #fff; font-size: 11px; font-weight: 800; line-height: 18px; text-align: center; border: 2px solid #fff; font-style: normal; }
+  .act .per { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #e7f3ff; color: #3d7fc4; font-size: 11px; font-weight: 700; vertical-align: 2px; }
+  .act.done .per { background: #ececec; color: #9a9a9a; }
+  .tabs button.on { color: var(--green-dark); font-weight: 700; }
+
+  .toast { position: fixed; left: 50%; top: 20px; transform: translate(-50%, -150%); background: rgba(40,50,40,.92); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 15px; transition: transform .3s, opacity .3s; opacity: 0; pointer-events: none; z-index: 50; max-width: 90vw; text-align: center; }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 40; padding: 16px; }
+  .modal .card { width: 100%; max-width: 360px; text-align: center; animation: pop .4s; }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .invite { border: 2px solid #ffd98a; background: #fffbf0; }
+  .row2 { display: flex; gap: 10px; }
+  .row2 .btn { margin-top: 12px; }
+  .small-btn.on { background: var(--green-dark); }
+  .lb-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 20; box-shadow: 0 -4px 14px rgba(0,0,0,.06); }
+  .lb-bar .inner { max-width: 448px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .lb-bar .small-btn { padding: 10px 18px; font-size: 16px; }
+  .chat-list { max-height: 320px; min-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #f8faf3; border-radius: 14px; }
+  .chat-empty { margin: auto; color: var(--muted); font-size: 14px; text-align: center; }
+  .msg { max-width: 80%; align-self: flex-start; }
+  .msg.me { align-self: flex-end; text-align: right; }
+  .msg .who { font-size: 12px; color: var(--muted); margin: 0 6px 3px; }
+  .msg .bub { display: inline-block; text-align: left; padding: 8px 12px; border-radius: 16px 16px 16px 4px; background: #fff; border: 1.5px solid var(--line); font-size: 15px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+  .msg.me .bub { background: var(--green); border-color: var(--green); color: #fff; border-radius: 16px 16px 4px 16px; }
+  .msg .time { font-size: 11px; color: var(--muted); margin: 2px 6px 0; }
+  .chat-form { display: flex; gap: 8px; margin-top: 10px; }
+  .chat-form input { flex: 1; min-width: 0; }
+  .chat-form .small-btn { padding: 0 18px; font-size: 16px; border-radius: 12px; }
+  .push-banner { display: flex; align-items: center; gap: 8px; background: #fff7e6; border: 1.5px solid #ffd98a; border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.45; }
+  .push-banner span { flex: 1; }
+  .push-banner .small-btn { flex-shrink: 0; }
+  .push-banner .pb-x { background: none; color: var(--muted); font-size: 16px; padding: 4px; flex-shrink: 0; }
+  .tab-badge.dot { min-width: 16px; height: 16px; line-height: 13px; font-size: 10px; padding: 0 4px; }
+  .sheep-svg .sh-bob .armor-piece { position: absolute; height: auto; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+  .sheep-svg .sh-bob .armor-piece.fit { object-fit: contain; filter: drop-shadow(0 1px 1.5px rgba(60,40,20,.3)); }
+  .msn-wait { text-align: center; padding: 14px 0 6px; }
+  .msn-wait .big { font-size: 46px; animation: sh-float 3s ease-in-out infinite; }
+  .msn-wait b { display: block; font-size: 19px; margin: 6px 0 4px; }
+  .dots i { font-style: normal; animation: dot-blink 1.4s infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes dot-blink { 0%, 60%, 100% { opacity: .2; } 30% { opacity: 1; } }
+  .msn-top { display: flex; justify-content: space-between; align-items: center; }
+  .msn-tag { background: #e8574f; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+  .msn-left { font-weight: 800; color: #e06c22; font-variant-numeric: tabular-nums; }
+  .msn-title { font-size: 21px; font-weight: 800; margin: 12px 0 8px; line-height: 1.4; }
+  .msn-done { margin-top: 14px; padding: 12px; border-radius: 14px; background: #fff4d6; border: 2px solid #f6c95e; text-align: center; font-weight: 800; font-size: 17px; }
+  .btn.confirm { background: #e06c22; }
+  .ticket-row { font-size: 16px; margin-bottom: 6px; } .ticket-row b { font-size: 22px; color: #e06c22; }
+  .wheel-box { max-width: 300px; margin: 0 auto; }
+  .wheel-svg { display: block; width: 100%; height: auto; }
+  #wheelRot { transform-origin: 0 0; transform-box: view-box; }
+  .armor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .armor-slot { background: #f6f7f1; border-radius: 14px; padding: 8px 4px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .armor-slot img { display: block; width: 64px; height: 64px; object-fit: contain; margin: 0 auto 4px; filter: grayscale(1) brightness(1.3); opacity: .25; }
+  .armor-slot.on { background: #fff8e6; color: var(--ink); box-shadow: inset 0 0 0 2px #f6c95e; }
+  .armor-slot.on img { filter: none; opacity: 1; }
+  .prize-img { width: 150px; height: 150px; object-fit: contain; display: block; margin: 8px auto 0; animation: pop .5s; }
+  .tabs button { font-size: 12px; }
+  /* 美地植物：羊旁邊的小花園 */
+  /* 美地植物：羊站在一片小草原上，樹在後面、花草在四周，越近越大 */
+  .meadow { position: relative; overflow: hidden; isolation: isolate; }
+  .meadow > svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .meadow .pl { position: absolute; transform: translateX(-50%); pointer-events: none; }
+  .meadow .pl img { display: block; height: 100%; width: auto; filter: drop-shadow(0 2px 1.5px rgba(40,60,20,.25)); animation: sway 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
+  .meadow .pl.tree img { animation-duration: 5s; }
+  .meadow .sheep-spot { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); z-index: 93; }
+  .meadow .sheep-spot .sheep-svg { display: block; }
+  @keyframes sway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+  .pen-scene { position: absolute; inset: 0; }
+  .meadow-mine { height: 290px; margin: 4px -6px 0; border-radius: 16px; }
+  .garden-count { font-size: 13px; color: var(--green-dark); margin-top: 8px; }
+  .land-plant { display: flex; align-items: center; gap: 10px; background: #f3faef; border-radius: 14px; padding: 10px 12px; margin-bottom: 14px; font-size: 14px; }
+  .land-plant img { height: 46px; }
+  .land-past .land-date img { height: 30px; vertical-align: middle; margin-left: 6px; }
+  .plant-big { height: 150px; display: block; margin: 8px auto 0; animation: pop .5s; }
+  /* 語音輸入按鈕 */
+  .mic-wrap { position: relative; }
+  .mic-wrap input[type=text], .mic-wrap textarea { padding-right: 46px; }
+  .mic-btn { position: absolute; right: 6px; bottom: 6px; width: 36px; height: 36px; border-radius: 50%; background: #eef6e8; font-size: 17px; line-height: 36px; padding: 0; text-align: center; }
+  .mic-wrap input[type=text] + .mic-btn { top: 50%; bottom: auto; transform: translateY(-50%); }
+  .mic-btn.on { background: #e5534b; box-shadow: 0 0 0 0 rgba(229,83,75,.5); animation: micpulse 1.2s infinite; }
+  @keyframes micpulse { 0% { box-shadow: 0 0 0 0 rgba(229,83,75,.5); } 100% { box-shadow: 0 0 0 12px rgba(229,83,75,0); } }
+  /* 我的美地 */
+  .land-date { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .land-date h2 { margin: 0; }
+  .land-status { font-size: 13px; color: var(--muted); }
+  .land-status.err { color: var(--danger); }
+  textarea.land-in { width: 100%; padding: 12px 14px; font: inherit; font-size: 16px; border: 1.5px solid var(--line); border-radius: 12px;
+    background: #fbfcf8; color: var(--ink); outline: none; resize: vertical; min-height: 52px; line-height: 1.5; }
+  textarea.land-in:focus { border-color: var(--green); }
+  .land-verse textarea.land-in { min-height: 84px; background: var(--cream); border-color: #f3e2bd; }
+  .land-item h3 { font-size: 16px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .land-item h3 .num { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: #fff; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+  .land-item .row { display: grid; grid-template-columns: minmax(0, 124px) minmax(0, 1fr); gap: 8px; }
+  .land-item .row > div { min-width: 0; }
+  /* iPhone 的時間欄位預設比格子寬，會蓋到旁邊的事件欄位：拿掉系統外觀、讓它乖乖縮在格子裡 */
+  .land-item input[type=time] { display: block; width: 100%; min-width: 0; max-width: 100%; height: 49px; min-height: 49px; line-height: 46px; padding: 0 6px; font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; font-size: 16px; font-weight: 400;
+    border: 1.5px solid var(--line); border-radius: 12px; background: #fbfcf8; color: var(--ink); outline: none;
+    -webkit-appearance: none; appearance: none; text-align: center; }
+  /* iPhone：時間字會黏在上面、字型也跟旁邊不一樣，這裡固定高度、垂直置中，字型跟事件欄位一樣 */
+  .land-item input[type=time]::-webkit-date-and-time-value { text-align: center; margin: 0; line-height: 46px; min-height: 46px;
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; font-size: 16px; font-weight: 400; color: var(--ink); }
+  .land-item input[type=time]::-webkit-datetime-edit { display: flex; justify-content: center; }
+  .land-item input[type=time]::-webkit-datetime-edit-fields-wrapper { margin: 0 auto; }
+  /* Android 的時鐘圖示會把字擠到左邊：改成透明蓋住整個欄位，點哪裡都能選時間，字就能真正置中 */
+  .land-item input[type=time] { position: relative; }
+  .land-item input[type=time]::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+  .land-item input[type=text] { min-width: 0; height: 49px; }
+  .land-item label { margin-top: 10px; }
+  .land-past { border-left: 4px solid #cfe5c8; }
+  .land-past .verse { background: var(--cream); border-radius: 12px; padding: 10px 12px; margin: 8px 0 4px; white-space: pre-wrap; line-height: 1.55; }
+  .land-past .ev { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .land-past .ev:last-child { border-bottom: 0; padding-bottom: 0; }
+  .land-past .ev .t { font-size: 13px; color: var(--green-dark); font-weight: 700; margin-right: 6px; }
+  .land-past .ev .res { margin-top: 4px; color: var(--ink); white-space: pre-wrap; }
+  .land-past .ev .res::before { content: "結果："; color: var(--muted); font-size: 14px; }
+  .land-empty { text-align: center; color: var(--muted); padding: 8px 0 20px; font-size: 14px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<nav class="tabs hidden" id="tabs">
+  <div class="inner">
+    <button data-tab="mine"><span class="ti">🐑<span class="tab-badge hidden" id="chatBadge"></span></span>我們的羊圈</button>
+    <button data-tab="home"><span class="ti">🏡</span>羊咩咩的家</button>
+    <button data-tab="mission"><span class="ti">🎯<span class="tab-badge dot hidden" id="missionBadge">!</span></span>羊羊出任務</button>
+    <button data-tab="land"><span class="ti">🌾</span>我的美地</button>
+    <button data-tab="settings"><span class="ti">⚙️</span>設定</button>
+  </div>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const EMOJIS = ["🐑","🐏","🐐","🦙","🌱","🌸","🌻","🍀","⭐","🌈","☀️","🕊️","❤️","🔥","💎","👑","🎵","📖"];
+// 每個等級的小羊大小（px）
+const STAGE_SIZE = { "小羊羔": 110, "喜羊羊": 135, "大肥羊": 150, "剛強羊": 160, "得勝羊": 170, "榮耀羊": 180 };
+
+const state = { config: null, me: null, team: null, tab: "mine" };
+const $app = document.getElementById("app");
+const $tabs = document.getElementById("tabs");
+
+// ---------- 工具
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// 登入憑證存在手機瀏覽器裡
+const getToken = () => { try { return localStorage.getItem("lamb_token") || ""; } catch { return ""; } };
+const setToken = t => { try { t ? localStorage.setItem("lamb_token", t) : localStorage.removeItem("lamb_token"); } catch {} };
+
+// 呼叫 Supabase 上的 lamb 函式
+const API_URL = "https://gserdnkovlwfdgcaguqe.supabase.co/functions/v1/lamb";
+async function api(action, data) {
+  let res;
+  try {
+    res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, token: getToken(), data: data || {} }),
+    });
+  } catch { throw new Error("網路連線失敗，請稍後再試"); }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) { const err = new Error(body.error || "發生錯誤"); err.status = res.status; throw err; }
+  return body;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+function avatarHtml(a, cls = "") {
+  const inner = a && a.startsWith("data:image/") ? `<img src="${esc(a)}" alt="">` : esc(a || "🐑");
+  return `<span class="avatar ${cls}">${inner}</span>`;
+}
+
+function stageInfo(score) {
+  const stages = state.config.stages; // [[400,"榮耀羊"],...] 由高到低
+  for (let i = 0; i < stages.length; i++) {
+    if (score >= stages[i][0]) {
+      const next = i > 0 ? stages[i - 1] : null;
+      return { name: stages[i][1], next };
+    }
+  }
+}
+
+// ---------- 會動的小羊（六張 GIF 圖＋周圍特效）
+const OL = "#4a3428"; // 特效描邊顏色
+const SHEEP_IMG_VER = 9; // 換新圖時把這個數字加 1，手機才會重新下載
+
+function sparkle(x, y, s, delay, color = "#ffd75e") {
+  return `<path class="sh-spark" style="transform-origin:${x}px ${y}px;animation-delay:${delay}s"
+    d="M${x} ${y - s} Q${x} ${y} ${x + s} ${y} Q${x} ${y} ${x} ${y + s} Q${x} ${y} ${x - s} ${y} Q${x} ${y} ${x} ${y - s}Z"
+    fill="${color}" stroke="${OL}" stroke-width="1.5" stroke-linejoin="round"/>`;
+}
+
+// 頭上冒出的對話泡泡
+function speech(text, delay = 0, cls = "sh-say") {
+  const w = text.length * 14 + 18, x = 198 - w;
+  return `<g class="${cls}" style="transform-origin:${x + 10}px 34px;animation-delay:${delay}s">
+    <rect x="${x}" y="6" width="${w}" height="26" rx="13" fill="#fff" stroke="${OL}" stroke-width="2"/>
+    <path d="M${x + 14} 31 L${x + 8} 40 L${x + 22} 31" fill="#fff" stroke="${OL}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="${x + 12}" y="28" width="12" height="4" fill="#fff"/>
+    <text x="${x + w / 2}" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="${OL}"
+      font-family="-apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif">${text}</text></g>`;
+}
+
+// 往上飄的小東西（音符、愛心…）
+function riser(content, x, y, delay, size = 16, color = "#e86a8a") {
+  return `<text class="sh-rise" x="${x}" y="${y}" font-size="${size}" fill="${color}" text-anchor="middle"
+    style="transform-origin:${x}px ${y}px;animation-delay:${delay}s">${content}</text>`;
+}
+
+// n：第幾張圖；motion：整隻羊的動作；say：對話泡泡
+// breathe：[秒數, 拉高, 變窄, 左右晃的角度]，羊和裝備一起呼吸，裝備才會像穿在身上
+const SHEEP_LOOK = {
+  "小羊羔": { n: 1, motion: "rock", say: "咩～", breathe: [.92, 1.03, .985, 2] },
+  "喜羊羊": { n: 2, motion: "side", say: "喜樂！", breathe: [.48, 1.045, .98, 0] },
+  "大肥羊": { n: 3, motion: "burp", say: "嗝～", breathe: [1.12, 1.035, .985, 0] },
+  "剛強羊": { n: 4, motion: "flex", say: "剛強壯膽！", breathe: [.6, 1.04, .985, 0] },
+  "得勝羊": { n: 5, motion: "cheer", say: "得勝有餘！", breathe: [.76, 1.035, .985, 1.5] },
+  "榮耀羊": { n: 6, motion: "float", say: "榮耀歸主", breathe: [1.24, 1.015, .995, 0] },
+};
+
+// 回傳一隻會動的羊：後面的光芒（只有榮耀羊）＋ GIF 圖（整隻一起動）＋前面的特效和對話泡泡
+// 抽到的裝備穿在羊身上的位置（佔整張圖的百分比）：頭中心 x、頭頂 y、身體中心 x/y、腳 y
+const ARMOR_POS = {
+  "小羊羔": { hx: 46, ht: 9, bx: 50, by: 70, fy: 86 },
+  "喜羊羊": { hx: 48, ht: 10, bx: 46, by: 68, fy: 88 },
+  "大肥羊": { hx: 52, ht: 8, bx: 50, by: 67, fy: 88 },
+  "剛強羊": { hx: 45, ht: 13, bx: 45, by: 70, fy: 83 },
+  "得勝羊": { hx: 52, ht: 12, bx: 52, by: 68, fy: 82 },
+  "榮耀羊": { hx: 52, ht: 16, bx: 50, by: 76, fy: 92 },
+};
+// 各隻羊專屬裝備圖要放的框（在 512×512 的羊圖上）：[中心x, 中心y, 框寬, 框高, 旋轉]；圖會縮放到剛好放進框裡
+const ARMOR_FIT = {"1":{"helmet":[257.5,48,203,0],"breastplate":[261.5,345,171,0],"belt":[306.0,351,260,0],"shoes":[271.0,420,194,0],"shield":[364.0,310,116,0],"sword":[128.5,223,139,0]},"2":{"helmet":[243.0,12,296,0],"breastplate":[278.0,316,180,0],"belt":[258.0,371,290,0],"shoes":[280.0,436,246,0],"shield":[193.5,264,131,0],"sword":[430,80,100,15]},"3":{"helmet":[268.0,10,246,0],"breastplate":[250.0,245,272,0],"belt":[263.0,288,374,0],"shoes":[288.5,429,209,0],"shield":[150,315,130,-6],"sword":[420,265,110,20]},"4":{"helmet":[230.0,2,284,0],"breastplate":[244.0,300,134,0],"belt":[300.5,377,241,0],"shoes":[268.5,349,237,0],"shield":[140,310,120,-6],"sword":[380,200,100,25]},"5":{"helmet":[238.5,-10,259,0],"breastplate":[295.5,255,115,0],"belt":[276.5,328,129,0],"shoes":[263.5,349,171,0],"shield":[155,275,110,-6],"sword":[395,65,100,15]},"6":{"helmet":[216.5,0,289,0],"breastplate":[265.5,322,209,0],"belt":[274.0,378,136,0],"shoes":[259.5,408,215,0],"shield":[140,345,120,-6],"sword":[420,290,100,20]}};
+function armorHtml(stage, prizes) {
+  if (!prizes || !prizes.length) return "";
+  const n = (SHEEP_LOOK[stage] || SHEEP_LOOK["小羊羔"]).n;
+  const own = ((state.config && state.config.armorSets) || {})[n] || [];
+  const P = ARMOR_POS[stage] || ARMOR_POS["小羊羔"];
+  // key: [中心 x, 中心 y, 寬度, 旋轉]
+  const spec = {
+    breastplate: [P.bx, P.by - 3, 24, 0], belt: [P.bx, P.by + 8, 28, 0], shoes: [50, P.fy - 1, 20, 0],
+    shield: [P.bx - 25, P.by, 23, -8], sword: [P.bx + 26, P.by - 7, 26, 12], helmet: [P.hx, P.ht + 5, 28, 0],
+  };
+  return ["breastplate", "belt", "shoes", "shield", "sword", "helmet"].filter(k => prizes.includes(k)).map(k => {
+    if (own.includes(k)) {  // 這隻羊有專屬的裝備圖：照量好的框放
+      // [中心 x, 上緣 y, 寬度, 旋轉]，以 512×512 的羊圖為準；高度跟著圖片比例
+      const [fx, ft, fw, fr] = ARMOR_FIT[n][k], pc = v => (v / 5.12).toFixed(2);
+      return `<img class="armor-piece fit" src="armor/s${n}/${k}.png?v=${SHEEP_IMG_VER}" alt="" style="left:${pc(fx - fw / 2)}%;top:${pc(ft)}%;width:${pc(fw)}%;transform:rotate(${fr}deg)">`;
+    }
+    const [cx, cy, w, r] = spec[k];
+    return `<img class="armor-piece" src="armor/${k}.png" alt="" style="left:${cx - w / 2}%;top:${cy - w / 2}%;width:${w}%;transform:rotate(${r}deg)">`;
+  }).join("");
+}
+
+function sheepSvg(stage, size, prizes) {
+  size = size || STAGE_SIZE[stage] || 120;
+  const L = SHEEP_LOOK[stage] || SHEEP_LOOK["小羊羔"];
+  let back = "", fx = "";
+  if (stage === "小羊羔") fx = riser("♡", 30, 120, 0, 16) + riser("♡", 172, 128, 1.2, 13);
+  if (stage === "喜羊羊") fx = riser("♪", 24, 130, 0, 20, "#6bbf6e") + riser("♥", 178, 140, .9, 15) + riser("♫", 20, 168, 1.6, 17, "#f0a33a");
+  if (stage === "剛強羊") {
+    fx = `<path class="sh-sweat" d="M160 40 q-5 8 0 11 q5 -3 0 -11z" fill="#8fd0ff" stroke="${OL}" stroke-width="1.5" style="transform-origin:160px 40px"/>
+      <g class="sh-power" style="transform-origin:14px 110px"><path d="M6 98 L22 102 M2 112 L22 112 M6 126 L22 122" stroke="#f0a33a" stroke-width="3.5" stroke-linecap="round"/></g>`;
+  }
+  if (stage === "得勝羊") {
+    const colors = ["#ff8a3d", "#5aa0e6", "#ffd75e", "#e86a8a", "#7cc576", "#b48be8"];
+    fx = [14, 40, 66, 134, 160, 186, 28, 172].map((x, i) =>
+      `<rect class="sh-fall" x="${x}" y="0" width="7" height="4" rx="1" fill="${colors[i % colors.length]}"
+        style="transform-origin:${x + 3}px 2px;animation-delay:${(i * 0.33).toFixed(2)}s"/>`).join("");
+  }
+  if (stage === "榮耀羊") {
+    back = `<g class="sh-rays" style="transform-origin:100px 104px">${[...Array(12)].map((_, i) => {
+      const a1 = (i * 30 - 5) * Math.PI / 180, a2 = (i * 30 + 5) * Math.PI / 180;
+      return `<path d="M100 104 L${(100 + Math.cos(a1) * 104).toFixed(1)} ${(104 + Math.sin(a1) * 104).toFixed(1)} L${(100 + Math.cos(a2) * 104).toFixed(1)} ${(104 + Math.sin(a2) * 104).toFixed(1)} Z" fill="#ffe7a0" opacity=".45"/>`;
+    }).join("")}</g>`;
+    fx = sparkle(12, 70, 7, .4) + sparkle(190, 150, 6, 1.1);
+  }
+  const say = L.motion === "burp" ? speech(L.say, 0, "sh-burp") : speech(L.say, Object.keys(SHEEP_LOOK).indexOf(stage) * 0.7);
+  return `<span class="sheep-svg" style="width:${size}px;height:${size}px" role="img" aria-label="${esc(stage)}">
+    ${back ? `<svg class="sh-layer" viewBox="0 0 200 200">${back}</svg>` : ""}
+    <span class="sh-bob m-${L.motion}"><span class="sh-breathe" style="--bd:${L.breathe[0]}s;--by:${L.breathe[1]};--bx:${L.breathe[2]};--br:${L.breathe[3]}deg"><img src="sheep/sheep-${L.n}.png?v=${SHEEP_IMG_VER}" alt="" draggable="false">${armorHtml(stage, prizes)}</span></span>
+    <svg class="sh-layer" viewBox="0 0 200 200">${fx}${say}</svg>
+  </span>`;
+}
+
+function sheepHtml(stage) { return sheepSvg(stage); }
+
+// ---------- 羊羊出任務：限時任務、抽獎輪盤、裝備
+let missionTimer = null, countdownTimer = null, wheelAngle = 0;
+function stopMissionTimers() { clearInterval(missionTimer); clearInterval(countdownTimer); missionTimer = countdownTimer = null; }
+
+function setMissionAlert(on) {
+  state.missionAlert = !!on;
+  const b = document.getElementById("missionBadge");
+  if (b) b.classList.toggle("hidden", !on);
+}
+
+function fmtLeft(sec) {
+  if (sec <= 0) return "已結束";
+  const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  const p = n => String(n).padStart(2, "0");
+  return d ? `${d} 天 ${h} 小時 ${m} 分` : `${p(h)}:${p(m)}:${p(s)}`;
+}
+
+// 抽獎輪盤（6 格，指針在正上方）
+function wheelSvg(list, owned) {
+  const seg = (i, r) => {
+    const a0 = (i * 60 - 30) * Math.PI / 180, a1 = (i * 60 + 30) * Math.PI / 180;
+    return `M0 0 L${(Math.sin(a0) * r).toFixed(1)} ${(-Math.cos(a0) * r).toFixed(1)} A${r} ${r} 0 0 1 ${(Math.sin(a1) * r).toFixed(1)} ${(-Math.cos(a1) * r).toFixed(1)} Z`;
+  };
+  const colors = ["#fff4d6", "#e3f2d6", "#ffe3dc", "#dcebfb", "#fff4d6", "#e9e1f7"];
+  return `<svg viewBox="-150 -150 300 300" class="wheel-svg">
+    <circle r="146" fill="#7a4e2d"/><circle r="139" fill="#f6c95e"/>
+    <g id="wheelRot" style="transform:rotate(${wheelAngle}deg)">
+      ${list.map((p, i) => {
+        const a = i * 60 * Math.PI / 180, x = Math.sin(a) * 82, y = -Math.cos(a) * 82, has = owned.includes(p.key);
+        return `<path d="${seg(i, 132)}" fill="${colors[i]}" stroke="#7a4e2d" stroke-width="2.5"/>
+          <g transform="rotate(${i * 60})" opacity="${has ? .45 : 1}">
+            <image href="armor/${p.key}.png" x="-27" y="-120" width="54" height="54"/>
+            <text y="-52" text-anchor="middle" font-size="11.5" font-weight="800" fill="#5a3a22">${p.name}</text>
+            ${has ? `<text y="-38" text-anchor="middle" font-size="10" font-weight="700" fill="#4a9a4e">✓ 已擁有</text>` : ""}
+          </g>`;
+      }).join("")}
+    </g>
+    <circle r="24" fill="#f6c95e" stroke="#7a4e2d" stroke-width="3"/><text y="6" text-anchor="middle" font-size="17">🐑</text>
+    <path d="M-15 -150 L15 -150 L0 -118 Z" fill="#e8574f" stroke="#7a4e2d" stroke-width="3" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+async function renderMission() {
+  if (!document.getElementById("missionPage")) {
+    $app.innerHTML = `<div id="missionPage">
+      <div class="hero" style="padding:8px 0 12px"><h1>🎯 羊羊出任務</h1>
+        <div class="muted">「所以要拿起神全副的軍裝」（弗 6:13）</div></div>
+      <div class="card" id="msnCard"><div class="muted center">載入中…</div></div>
+      <div class="card" id="raffleCard"></div>
+      <div class="card" id="armorCard"></div></div>`;
+  }
+  let st;
+  try { st = await api("missionState"); } catch (err) { document.getElementById("msnCard").innerHTML = `<div class="error">${esc(err.message)}</div>`; return; }
+  if (state.tab !== "mission") return;
+  state.mission = st;
+  if (state.team) state.team.prizes = st.prizes;
+  const m = st.mission;
+  setMissionAlert(st.tickets > 0 || (m && !m.iDone && state.team));
+
+  // ---- 任務卡
+  const card = document.getElementById("msnCard");
+  if (!state.team) {
+    card.innerHTML = `<div class="msn-wait"><div class="big">🐑</div><b>組隊之後就能一起出任務囉！</b></div>`;
+  } else if (!m) {
+    card.innerHTML = `<div class="msn-wait"><div class="big">⏳</div><b>等待中<span class="dots"><i>.</i><i>.</i><i>.</i></span></b>
+      <div class="muted">任務發佈後會出現在這裡（有開通知的話手機也會收到）</div></div>`;
+  } else {
+    const endAt = Date.now() + m.secondsLeft * 1000;
+    card.innerHTML = `
+      <div class="msn-top"><span class="msn-tag">限時任務</span><span class="msn-left" id="msnLeft">⏰ 剩下 ${fmtLeft(m.secondsLeft)}</span></div>
+      <div class="msn-title">${esc(m.title)}</div>
+      <div class="msn-members">${m.members.map(x => `<span class="chip">${x.done ? "✅" : "⏳"} ${esc(x.name)}</span>`).join("")}</div>
+      ${m.teamDone ? `<div class="msn-done">🎉 全組完成！獲得一張抽獎券</div>`
+        : m.iDone ? `<button class="btn" disabled>✓ 你已完成，等待組員…</button>`
+        : `<button class="btn" id="msnBtn">我完成了 ✅</button>`}
+      <div class="muted" style="margin-top:8px">小組每個人都按「完成」，就能得到一張抽獎券 🎟️</div>`;
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      const left = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+      const el = document.getElementById("msnLeft");
+      if (!el) return clearInterval(countdownTimer);
+      el.textContent = `⏰ 剩下 ${fmtLeft(left)}`;
+      if (!left) { clearInterval(countdownTimer); renderMission(); }
+    }, 1000);
+    const btn = document.getElementById("msnBtn");
+    if (btn) btn.onclick = async () => {
+      if (!btn.dataset.sure) { btn.dataset.sure = "1"; btn.textContent = "確定完成了嗎？再按一次"; btn.classList.add("confirm"); return; }
+      btn.disabled = true;
+      try {
+        const r = await api("missionDone", { missionId: m.id });
+        toast(r.gotTicket ? "🎉 全組完成！獲得一張抽獎券" : "完成了！等組員一起完成就能抽獎");
+        renderMission();
+      } catch (err) { toast(err.message); btn.disabled = false; }
+    };
+  }
+
+  // ---- 抽獎輪盤
+  document.getElementById("raffleCard").innerHTML = `
+    <h2>🎡 裝備抽獎輪盤</h2>
+    <div class="ticket-row">🎟️ 抽獎券 <b>${st.tickets}</b> 張</div>
+    <div class="wheel-box">${wheelSvg(st.prizeList, st.prizes)}</div>
+    <button class="btn" id="spinBtn" ${st.tickets && state.team ? "" : "disabled"}>${st.tickets ? "轉動輪盤抽裝備！" : "完成任務就能得到抽獎券"}</button>
+    <div class="muted" style="margin-top:8px">一張抽獎券抽一件裝備，會先從還沒有的裝備裡抽。</div>`;
+  const spinBtn = document.getElementById("spinBtn");
+  spinBtn.onclick = async () => {
+    spinBtn.disabled = true; spinBtn.textContent = "轉呀轉…";
+    let r;
+    try { r = await api("spin"); } catch (err) { toast(err.message); spinBtn.disabled = false; return; }
+    const target = (360 - r.index * 60) % 360, jitter = Math.random() * 30 - 15;
+    wheelAngle = wheelAngle + 360 * 5 + ((target - wheelAngle) % 360 + 360) % 360 + jitter;
+    const rot = document.getElementById("wheelRot");
+    rot.style.transition = "transform 4.2s cubic-bezier(.17,.67,.12,1)";
+    rot.style.transform = `rotate(${wheelAngle}deg)`;
+    setTimeout(() => {
+      wheelAngle -= jitter;
+      if (state.team) state.team.prizes = r.prizes;
+      showPrize(r);
+      renderMission();
+    }, 4400);
+  };
+
+  // ---- 我們的裝備
+  const owned = st.prizes;
+  document.getElementById("armorCard").innerHTML = `
+    <h2>🛡️ 我們的裝備（${owned.length} / 6）</h2>
+    ${state.team ? `<div class="center">${sheepSvg(state.team.stage, 170, owned)}</div>` : ""}
+    <div class="armor-grid">${st.prizeList.map(p => `
+      <div class="armor-slot ${owned.includes(p.key) ? "on" : ""}">
+        <img src="armor/${p.key}.png" alt=""><span>${owned.includes(p.key) ? p.name : "？？？"}</span></div>`).join("")}</div>`;
+
+  if (!missionTimer) missionTimer = setInterval(() => { if (!document.hidden && state.tab === "mission") renderMission(); }, 15000);
+}
+
+function showPrize(r) {
+  const name = (state.mission.prizeList.find(p => p.key === r.prize) || {}).name || "";
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="card"><div class="muted">${r.duplicate ? "六件裝備都集滿了，這次抽到重複的" : "恭喜抽到！"}</div>
+    <img src="armor/${r.prize}.png" alt="" class="prize-img">
+    <h1>${esc(name)}</h1>
+    ${state.team ? `<div class="muted">已經穿在「${esc(state.team.name)}」的羊羊身上了</div>
+      <div style="margin-top:6px">${sheepSvg(state.team.stage, 130, r.prizes)}</div>` : ""}
+    <button class="btn">太棒了！</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.tagName === "BUTTON") m.remove(); };
+  document.body.appendChild(m);
+}
+
+// 點小羊會跳一下，還會冒出愛心
+document.addEventListener("click", e => {
+  const svg = e.target.closest(".sheep-svg");
+  if (!svg) return;
+  svg.classList.remove("jump"); void svg.getBoundingClientRect(); svg.classList.add("jump");
+  clearTimeout(svg._t); svg._t = setTimeout(() => svg.classList.remove("jump"), 700);
+  const h = document.createElement("span");
+  h.className = "heart-pop";
+  h.textContent = ["💕", "💗", "✨", "🌸"][Math.floor(Math.random() * 4)];
+  h.style.left = e.clientX + "px"; h.style.top = e.clientY + "px";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 1000);
+});
+
+// ---------- 手機通知（Web Push）
+const push = { supported: "serviceWorker" in navigator && "PushManager" in window && "Notification" in window, reg: null, key: undefined };
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isStandalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").then(r => { push.reg = r; }).catch(() => {});
+  // 點了通知、App 本來就開著時，切到對應的畫面
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.type === "open") openFromNotification(e.data.url); });
+}
+
+function b64ToBytes(s) {
+  const raw = atob((s + "=".repeat((4 - s.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+async function pushRegistration() {
+  if (!push.supported) return null;
+  if (push.reg) return push.reg;
+  return Promise.race([navigator.serviceWorker.ready, new Promise(r => setTimeout(() => r(null), 5000))]);
+}
+async function currentSubscription() {
+  const reg = await pushRegistration();
+  return reg ? reg.pushManager.getSubscription() : null;
+}
+async function serverPushKey() {
+  if (push.key === undefined) { try { push.key = (await api("pushKey")).publicKey; } catch { return null; } }
+  return push.key;
+}
+// unsupported / ios-home（iPhone 要先加入主畫面）/ off-server / denied / on / off
+async function pushState() {
+  if (!push.supported) return isIOS && !isStandalone ? "ios-home" : "unsupported";
+  if (!(await serverPushKey())) return "off-server";
+  if (Notification.permission === "denied") return "denied";
+  return Notification.permission === "granted" && (await currentSubscription()) ? "on" : "off";
+}
+async function enablePush() {
+  const key = await serverPushKey();
+  if (!key) throw new Error("管理員還沒有開啟通知功能");
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") throw new Error(perm === "denied" ? "通知被封鎖了，請到手機設定允許通知" : "沒有允許通知");
+  const reg = await pushRegistration();
+  if (!reg) throw new Error("這支手機暫時無法開啟通知，請稍後再試");
+  const sub = (await reg.pushManager.getSubscription()) ||
+    (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) }));
+  await api("pushSubscribe", { subscription: sub.toJSON() });
+}
+async function disablePush() {
+  const sub = await currentSubscription();
+  if (!sub) return;
+  await api("pushUnsubscribe", { endpoint: sub.endpoint }).catch(() => {});
+  await sub.unsubscribe();
+}
+// 登入後把這支手機的通知綁到目前的人（換人登入時也會更新）
+async function syncPush() {
+  try {
+    if (!push.supported || Notification.permission !== "granted") return;
+    const sub = await currentSubscription();
+    if (sub && (await serverPushKey())) await api("pushSubscribe", { subscription: sub.toJSON() });
+  } catch {}
+}
+function openFromNotification(url) {
+  const hash = new URL(url, location.href).hash;
+  if (!state.me) return boot();
+  if (state.team) { if (hash === "#mission") return showTab("mission"); if (hash === "#land") return showTab("land"); showTab("mine"); if (hash === "#chat") scrollToChat(); } else boot();
+}
+function scrollToChat() {
+  setTimeout(() => { const c = document.getElementById("chatList"); if (c) c.closest(".card").scrollIntoView({ behavior: "smooth", block: "center" }); }, 300);
+}
+
+const PUSH_TEXT = {
+  "ios-home": "iPhone 要先把 App 加到主畫面才能收通知：Safari 下方「分享 ⬆️」→「加入主畫面」，再從主畫面的小羊圖示打開。",
+  unsupported: "這個瀏覽器不支援通知。建議 Android 用 Chrome、iPhone 用 Safari（iOS 16.4 以上）並加入主畫面。",
+  "off-server": "管理員還沒有開啟通知功能。",
+  denied: "通知被封鎖了。請到手機的「設定」（或瀏覽器的網站設定）允許「小羊長大日記」的通知，再回來這裡。",
+};
+
+// 「開啟通知」提示條：出現在羊圈和找同伴頁面最上方
+async function showPushBanner() {
+  try { if (localStorage.getItem("lamb_push_banner_off")) return; } catch {}
+  const st = await pushState();
+  if (st !== "off" && st !== "ios-home") return;
+  if (document.getElementById("pushBanner") || !$app.firstElementChild) return;
+  const el = document.createElement("div");
+  el.id = "pushBanner"; el.className = "push-banner";
+  el.innerHTML = st === "off"
+    ? `<span>🔔 開啟通知，組員傳訊息、邀請你時才不會錯過</span><button class="small-btn" data-on>開啟</button><button class="pb-x" data-x>✕</button>`
+    : `<span>🔔 想收到通知？${PUSH_TEXT["ios-home"]}</span><button class="pb-x" data-x>✕</button>`;
+  el.onclick = async e => {
+    if (e.target.dataset.x !== undefined) { try { localStorage.setItem("lamb_push_banner_off", "1"); } catch {} return el.remove(); }
+    if (e.target.dataset.on !== undefined) {
+      e.target.disabled = true;
+      try { await enablePush(); el.remove(); toast("通知已開啟 🔔"); } catch (err) { toast(err.message); e.target.disabled = false; }
+    }
+  };
+  $app.prepend(el);
+}
+
+// 設定頁的通知卡片
+async function renderPushCard() {
+  const box = document.getElementById("pushBody");
+  if (!box) return;
+  const st = await pushState();
+  if (!document.body.contains(box)) return;
+  const list = `<div class="muted" style="margin-top:10px;line-height:1.7">會收到的通知：<br>💬 組員傳訊息　📬 收到組隊邀請　🎉 組隊成功<br>🐑 小羊進化　✅ 組員完成項目　⏰ 每晚提醒（當天還沒記錄時）</div>`;
+  if (st === "on") {
+    box.innerHTML = `<div>✅ 這支手機已開啟通知</div>${list}
+      <button class="btn" data-test>傳一則測試通知給自己</button><button class="btn ghost" data-off>關閉這支手機的通知</button>`;
+  } else if (st === "off") {
+    box.innerHTML = `<div>開啟後，就算沒打開 App，手機也會跳出通知。</div>${list}<button class="btn" data-on>開啟通知 🔔</button>`;
+  } else {
+    box.innerHTML = `<div>${PUSH_TEXT[st]}</div>${list}`;
+  }
+  box.onclick = async e => {
+    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    b.disabled = true;
+    try {
+      if (b.dataset.on !== undefined) { await enablePush(); toast("通知已開啟 🔔"); }
+      if (b.dataset.off !== undefined) { await disablePush(); toast("已關閉這支手機的通知"); }
+      if (b.dataset.test !== undefined) { await api("pushTest"); toast("已送出，幾秒內手機會跳出通知"); }
+    } catch (err) { toast(err.message); }
+    b.disabled = false;
+    renderPushCard();
+  };
+}
+
+// 把上傳的圖片縮小成 200x200 再存
+function resizeImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const S = 160, c = document.createElement("canvas"); // 試算表一格有字數上限，所以縮小一點
+      c.width = c.height = S;
+      const m = Math.min(img.width, img.height);
+      c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      resolve(c.toDataURL("image/jpeg", 0.75));
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function avatarPicker(current, onChange) {
+  // 回傳 HTML，並於 render 後呼叫 bind
+  const html = `
+    <div class="center" style="margin-bottom:12px" id="avPreview">${avatarHtml(current, "lg")}</div>
+    <div class="emoji-grid" id="emojiGrid">
+      ${EMOJIS.map(e => `<button type="button" data-e="${e}" class="${e === current ? "on" : ""}">${e}</button>`).join("")}
+    </div>
+    <div class="center"><label class="upload">📷 或上傳照片<input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/heic" id="avFile"></label></div>`;
+  const bind = () => {
+    const set = v => {
+      document.getElementById("avPreview").innerHTML = avatarHtml(v, "lg");
+      document.querySelectorAll("#emojiGrid button").forEach(b => b.classList.toggle("on", b.dataset.e === v));
+      onChange(v);
+    };
+    document.getElementById("emojiGrid").onclick = e => { const b = e.target.closest("button"); if (b) set(b.dataset.e); };
+    document.getElementById("avFile").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try { set(await resizeImage(f)); } catch { toast("無法讀取這張圖片"); }
+    };
+  };
+  return { html, bind };
+}
+
+// ---------- 畫面：手機登入（第一次使用會再請他填暱稱）
+function renderAuth() {
+  stopLobbyPolling();
+  stopChatPolling();
+  $tabs.classList.add("hidden");
+  $app.innerHTML = `
+    <div class="hero"><div>${sheepSvg("小羊羔", 130)}</div><h1>小羊長大日記</h1><div class="muted">每天一點點，小羊慢慢長大</div></div>
+    <form class="card" id="authForm">
+      <h2>手機登入</h2>
+      <label>手機號碼</label>
+      <input type="tel" name="phone" inputmode="numeric" placeholder="0912345678" autocomplete="tel" required>
+      <div id="nameBox" class="hidden">
+        <label>第一次使用，請輸入你的暱稱</label>
+        <input type="text" name="name" maxlength="12" placeholder="例：小明">
+      </div>
+      <div class="error" id="authErr"></div>
+      <button class="btn" type="submit">進入</button>
+    </form>`;
+  const form = document.getElementById("authForm"), nameInput = form.querySelector("[name=name]");
+  // 改了手機號碼就把暱稱欄收起來，重新判斷是否已註冊
+  form.phone.oninput = () => { document.getElementById("nameBox").classList.add("hidden"); nameInput.value = ""; };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const fd = Object.fromEntries(new FormData(form));
+    const btn = form.querySelector(".btn"), err = document.getElementById("authErr");
+    btn.disabled = true; btn.textContent = "請稍候…"; err.textContent = "";
+    try {
+      const r = await api("enter", fd);
+      if (r.needName) {
+        document.getElementById("nameBox").classList.remove("hidden");
+        nameInput.focus();
+        btn.disabled = false; btn.textContent = "建立帳號並進入";
+        return;
+      }
+      setToken(r.token);
+      await boot();
+    } catch (ex) {
+      err.textContent = ex.message;
+      btn.disabled = false; btn.textContent = nameInput.value ? "建立帳號並進入" : "進入";
+    }
+  };
+}
+
+// ---------- 畫面：還沒有組別，找 2 位同伴
+let lobbyTimer = null, lobbyFill = null;
+function stopLobbyPolling() { clearInterval(lobbyTimer); lobbyTimer = null; lobbyFill = null; }
+
+async function refreshLobby() {
+  if (document.hidden || document.querySelector(".modal") || !lobbyFill) return;
+  try {
+    const r = await api("me");
+    if (!lobbyFill) return;
+    if (!r.user) { stopLobbyPolling(); setToken(""); return renderAuth(); }
+    if (r.team) return teamFormed(r);
+    state.lobby = r.lobby;
+    lobbyFill();
+  } catch {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshLobby(); });
+
+function teamFormed(r) {
+  stopLobbyPolling();
+  startUnreadPolling();
+  state.me = r.user; state.team = r.team;
+  showTab("mine");
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="card"><div style="font-size:15px" class="muted">三隻羊羊到齊了！</div>
+    <div style="margin:14px 0">${avatarHtml(r.team.avatar, "lg")}</div>
+    <h1>「${esc(r.team.name)}」組隊成功 🎉</h1>
+    <div class="muted">${r.team.members.map(x => esc(x.name)).join("、")}</div>
+    <button class="btn">開始養小羊！</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.tagName === "BUTTON") m.remove(); };
+  document.body.appendChild(m);
+}
+
+function memberChips(members) {
+  return members.map(x => `<span class="chip">${x.accepted ? "✅" : "⏳"} ${esc(x.name)}</span>`).join("");
+}
+
+function renderLobby() {
+  $tabs.classList.add("hidden");
+  const picked = new Set();
+  $app.innerHTML = `
+    <div class="hero" style="padding:12px 0 14px"><div>${sheepSvg("小羊羔", 110)}</div>
+      <h1 style="font-size:21px">快找到你的其他2隻羊羊同伴吧！</h1>
+      <div class="muted">${esc(state.me.name)}，一組需要 3 個人，另外兩位都按同意才能組隊</div></div>
+    <div id="lbIncoming"></div>
+    <div id="lbOutgoing"></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 style="margin:0">還沒有組別的羊羊</h2>
+        <button class="link" id="lbRefresh">🔄 重新整理</button>
+      </div>
+      <input type="search" id="lbFilter" placeholder="搜尋暱稱" style="margin-top:10px">
+      <div id="lbList" style="margin-top:6px"></div>
+    </div>
+    <div class="center"><button class="link" id="logoutBtn">登出</button></div>
+    <div class="lb-bar hidden" id="lbBar"></div>`;
+
+  const $in = document.getElementById("lbIncoming"), $out = document.getElementById("lbOutgoing");
+  const $list = document.getElementById("lbList"), $bar = document.getElementById("lbBar");
+  const $filter = document.getElementById("lbFilter");
+
+  const fill = () => {
+    const L = state.lobby;
+    const pending = !!(L.outgoing && L.outgoing.status === "pending");
+    [...picked].forEach(id => { if (pending || !L.unassigned.some(u => u.id === id)) picked.delete(id); });
+
+    $in.innerHTML = L.incoming.map(inv => `
+      <div class="card invite">
+        <div class="team-head">${avatarHtml(inv.avatar, "sm")}
+          <div><div class="name" style="font-size:17px">📬 ${esc(inv.inviter)} 邀請你組隊</div>
+          <div class="muted">組別名稱：「${esc(inv.teamName)}」</div></div></div>
+        <div style="margin-top:8px">${memberChips(inv.members)}</div>
+        ${inv.iAccepted
+          ? `<div class="muted" style="margin-top:10px">你已同意，等待其他同伴回覆…</div>`
+          : `<div class="row2"><button class="btn" data-accept="${inv.id}">同意</button><button class="btn ghost" data-decline="${inv.id}">拒絕</button></div>`}
+      </div>`).join("");
+
+    const o = L.outgoing;
+    $out.innerHTML = !o ? "" : o.status === "pending" ? `
+      <div class="card">
+        <h2>📤 你送出的邀請</h2>
+        <div class="team-head">${avatarHtml(o.avatar, "sm")}<div class="name" style="font-size:17px">「${esc(o.teamName)}」</div></div>
+        <div style="margin-top:8px">${memberChips(o.members)}</div>
+        <div class="muted" style="margin-top:8px">等待同伴按同意中…兩位都同意就會自動組隊</div>
+        <button class="btn ghost" data-cancel="${o.id}">取消邀請</button>
+      </div>` : `
+      <div class="card invite">
+        <h2>😢 邀請沒有成功</h2>
+        <div>「${esc(o.teamName)}」：${esc(o.note)}，請重新邀請其他同伴。</div>
+        <button class="btn" data-dismiss="${o.id}">知道了</button>
+      </div>`;
+
+    const q = $filter.value.trim().toLowerCase();
+    const invitedIds = pending ? o.members.map(x => x.id) : [];
+    const shown = L.unassigned.filter(u => !q || u.name.toLowerCase().includes(q));
+    $list.innerHTML = (pending ? `<div class="muted" style="padding:6px 0">你的邀請正在等待回覆，要邀請別人請先取消</div>` : "") +
+      (shown.length ? shown.map(u => {
+        const on = picked.has(u.id), invited = invitedIds.includes(u.id);
+        const btn = invited ? `<span class="muted">已邀請</span>`
+          : pending ? ""
+          : `<button class="small-btn ${on ? "on" : ""}" data-pick="${u.id}" ${!on && picked.size >= 2 ? "disabled" : ""}>${on ? "✓ 已選" : "選擇"}</button>`;
+        return `<div class="result"><span>🐑 ${esc(u.name)} <span class="muted">末三碼 ${esc(u.phoneTail)}</span></span>${btn}</div>`;
+      }).join("") : `<div class="muted" style="padding:10px 0">${q ? "找不到符合的羊羊" : "目前沒有其他還沒組隊的羊羊。請朋友先用手機號碼登入，就會出現在這裡！"}</div>`);
+
+    const names = L.unassigned.filter(u => picked.has(u.id)).map(u => esc(u.name));
+    $bar.classList.toggle("hidden", pending || !picked.size);
+    $bar.innerHTML = `<div class="inner"><span>已選 ${picked.size}/2：${names.join("、")}</span>
+      <button class="small-btn" id="inviteBtn" ${picked.size === 2 ? "" : "disabled"}>送出邀請</button></div>`;
+  };
+
+  const respond = async (btn, accept) => {
+    btn.disabled = true; btn.textContent = "請稍候…";
+    try {
+      const r = await api("respondInvite", { inviteId: +(btn.dataset.accept || btn.dataset.decline), accept });
+      if (r.formed) return teamFormed(await api("me"));
+      state.lobby = r.lobby; fill();
+      toast(r.message || (accept ? "已同意，等待其他同伴回覆" : "已拒絕邀請"));
+    } catch (err) { toast(err.message); refreshLobby(); }
+  };
+  $in.onclick = e => {
+    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    if (b.dataset.accept) return respond(b, true);
+    if (b.dataset.decline) {
+      if (b.dataset.sure) return respond(b, false);
+      b.dataset.sure = "1"; b.textContent = "確定拒絕？";
+    }
+  };
+  $out.onclick = async e => {
+    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    const action = b.dataset.cancel ? "cancelInvite" : b.dataset.dismiss ? "dismissInvite" : null;
+    if (!action) return;
+    b.disabled = true;
+    try { state.lobby = (await api(action, { inviteId: +(b.dataset.cancel || b.dataset.dismiss) })).lobby; fill(); }
+    catch (err) { toast(err.message); refreshLobby(); }
+  };
+  $list.onclick = e => {
+    const b = e.target.closest("[data-pick]"); if (!b || b.disabled) return;
+    const id = +b.dataset.pick;
+    picked.has(id) ? picked.delete(id) : picked.add(id);
+    fill();
+  };
+  $bar.onclick = e => { if (e.target.id === "inviteBtn" && picked.size === 2) openInviteModal(); };
+  $filter.oninput = fill;
+  document.getElementById("lbRefresh").onclick = () => { toast("更新中…"); refreshLobby(); };
+  document.getElementById("logoutBtn").onclick = logout;
+
+  const openInviteModal = () => {
+    let avatar = "🐑";
+    const picker = avatarPicker(avatar, v => (avatar = v));
+    const names = state.lobby.unassigned.filter(u => picked.has(u.id)).map(u => esc(u.name)).join("、");
+    const m = document.createElement("div");
+    m.className = "modal";
+    m.innerHTML = `<div class="card" style="text-align:left;max-height:90vh;overflow:auto">
+      <h2>邀請 ${names} 組隊</h2>
+      <label>幫你們的組別取名字</label>
+      <input type="text" id="tname" maxlength="20" placeholder="例：恩典小羊隊">
+      <label>選一個頭像</label>
+      ${picker.html}
+      <div class="error" id="ivErr"></div>
+      <button class="btn" id="ivSend">送出邀請 📨</button>
+      <button class="btn ghost" id="ivClose">取消</button></div>`;
+    document.body.appendChild(m);
+    picker.bind();
+    m.querySelector("#ivClose").onclick = () => m.remove();
+    m.querySelector("#ivSend").onclick = async e => {
+      const name = m.querySelector("#tname").value.trim();
+      if (!name) return (m.querySelector("#ivErr").textContent = "請幫組別取個名字");
+      e.target.disabled = true; e.target.textContent = "送出中…";
+      try {
+        const r = await api("invite", { memberIds: [...picked], name, avatar });
+        m.remove();
+        picked.clear();
+        state.lobby = r.lobby; fill();
+        toast("邀請已送出，等待同伴同意！");
+      } catch (err) {
+        m.querySelector("#ivErr").textContent = err.message;
+        e.target.disabled = false; e.target.textContent = "送出邀請 📨";
+      }
+    };
+  };
+
+  fill();
+  showPushBanner();
+  stopLobbyPolling();
+  lobbyFill = fill;
+  lobbyTimer = setInterval(refreshLobby, 20000);
+}
+
+// ---------- 畫面：我們的羊圈
+function renderMine() {
+  const t = state.team, max = state.config.maxScore;
+  const { name: stage, next } = stageInfo(t.score);
+  const acts = state.config.activities;
+  const actLabel = k => (acts[k] ? acts[k].label : k);
+  $app.innerHTML = `
+    <div class="card">
+      <div class="team-head">
+        ${avatarHtml(t.avatar)}
+        <div><div class="name">${esc(t.name)}</div><div class="muted">組員：${t.members.map(m => esc(m.name)).join("、")}</div></div>
+      </div>
+      <div class="stage-box">
+        ${meadowHtml(sheepSvg(stage, undefined, t.prizes), t.plants, "meadow-mine")}
+        ${t.plantCount ? `<div class="garden-count">🌱 這週的美地植物 ${t.plantCount} 株（每週一重新種）</div>` : ""}
+        <div class="stage-name">${stage}</div>
+        <div class="score">${t.score}<small> / ${max} 分</small></div>
+        <div class="bar"><div style="width:${(t.score / max) * 100}%"></div></div>
+        <div class="next">${next ? `再 ${next[0] - t.score} 分就會進化成「${next[1]}」` : "已經是最高等級的榮耀羊了！✨"}</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>今天做了什麼？</h2>
+      <div class="acts">
+        ${Object.entries(acts).map(([k, a]) => {
+          const today = t.doneToday.includes(k), week = (t.doneWeek || []).includes(k);
+          const done = today || week, doneText = a.per === "week" ? "✓ 本週已完成" : "✓ 已完成";
+          // 今天按的可以取消；這週稍早按的每週項目就鎖住
+          return `<button class="act ${done ? "done" : ""} ${done && !today ? "locked" : ""}" data-act="${k}" data-done-text="${doneText}">
+            <span class="ico">${a.icon}</span><span class="lbl">${a.label}${a.per === "week" ? `<small class="per">每週一次</small>` : ""}</span>
+            <span class="pts">${done ? doneText : "+" + a.points}</span></button>`;
+        }).join("")}
+      </div>
+      <div class="muted" style="margin-top:10px">週日聚會、小排聚會每人<b>每週</b>可記錄一次（週一～週日），其他項目每天一次，分數會加到共同帳戶。<br>按錯了？當天再點兩下「已完成」就能取消。</div>
+    </div>
+    <div class="card">
+      <h2>💬 羊圈聊天室</h2>
+      <div class="chat-list" id="chatList"></div>
+      <form class="chat-form" id="chatForm">
+        <input type="text" maxlength="300" placeholder="跟組員說點什麼…" autocomplete="off" enterkeyhint="send">
+        <button class="small-btn" type="submit">送出</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>最近紀錄</h2>
+      <div class="log">${t.recent.length ? t.recent.map(r =>
+        `<div><span>${esc(r.name)}・${esc(actLabel(r.activity))}</span><span class="muted">+${r.points}　${r.at.slice(5, 10).replace("-", "/")} ${r.at.slice(11, 16)}</span></div>`
+      ).join("") : `<span class="muted">還沒有紀錄，從今天開始吧！</span>`}</div>
+    </div>`;
+
+  $app.querySelector(".acts").onclick = async e => {
+    const b = e.target.closest(".act"); if (!b || b.disabled) return;
+    if (b.classList.contains("locked")) return toast("本週已經記錄過囉！下週一就可以再按");
+    if (b.classList.contains("done")) {
+      // 按錯了可以取消：已完成的項目要連按兩次才會取消，避免又誤觸
+      const pts = b.querySelector(".pts");
+      if (!b.dataset.sure) {
+        b.dataset.sure = "1"; b.classList.add("undo"); pts.textContent = "再按一次取消";
+        clearTimeout(b._t);
+        b._t = setTimeout(() => { delete b.dataset.sure; b.classList.remove("undo"); pts.textContent = b.dataset.doneText; }, 3000);
+        return;
+      }
+      clearTimeout(b._t);
+      b.disabled = true; pts.textContent = "取消中…";
+      try {
+        const r = await api("uncheckin", { activity: b.dataset.act });
+        state.team = r.team;
+        if (state.tab === "mine") renderMine();
+        toast(`已取消「${state.config.activities[b.dataset.act].label}」，扣回 ${r.removed} 分`);
+      } catch (err) { toast(err.message); if (state.tab === "mine") renderMine(); }
+      return;
+    }
+    b.disabled = true;
+    const pts = b.querySelector(".pts"), oldText = pts.textContent;
+    pts.textContent = "記錄中…";
+    try {
+      const r = await api("checkin", { activity: b.dataset.act });
+      state.team = r.team;
+      if (state.tab === "mine") renderMine();
+      if (r.evolved) showEvolve(r.team.stage);
+      else toast(r.gained > 0 ? `+${r.gained} 分，好棒！` : "已達滿分 500 分 🎉");
+    } catch (err) { toast(err.message); b.disabled = false; pts.textContent = oldText; }
+  };
+  startChat();
+  showPushBanner();
+}
+
+// ---------- 未讀訊息：「我們的羊圈」分頁圖案右上角的紅色數字
+let unreadTimer = null, chatObserver = null, chatSeen = false;
+function setUnread(n) {
+  state.unread = n;
+  const b = document.getElementById("chatBadge");
+  if (b) { b.textContent = n > 99 ? "99+" : String(n); b.classList.toggle("hidden", !n); }
+  try { if (navigator.setAppBadge) n ? navigator.setAppBadge(n) : navigator.clearAppBadge(); } catch {}
+}
+const chatIsVisible = () => state.tab === "mine" && chatSeen && !document.hidden;
+async function refreshUnread() {
+  if (!state.team || document.hidden) return;
+  if (chatIsVisible()) return markChatRead();
+  try { const r = await api("chatUnread"); setUnread(r.unread); setMissionAlert(r.missionAlert); } catch {}
+}
+async function markChatRead() {
+  const c = state.chat;
+  if (!c || !c.msgs.length) return;
+  const last = c.msgs[c.msgs.length - 1].id;
+  if (last <= (c.readId || 0) && !state.unread) return;
+  c.readId = last;
+  setUnread(0);
+  try { setUnread((await api("chatRead", { lastId: last })).unread); } catch {}
+}
+function startUnreadPolling() { clearInterval(unreadTimer); unreadTimer = setInterval(refreshUnread, 8000); }
+function stopUnreadPolling() { clearInterval(unreadTimer); unreadTimer = null; setUnread(0); }
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshUnread(); });
+
+// ---------- 組內聊天（每 5 秒抓一次新訊息，只在「我們的羊圈」頁面開著時）
+let chatTimer = null;
+function stopChatPolling() { clearInterval(chatTimer); chatTimer = null; }
+
+function fmtChatTime(at) {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  const today = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  return at.slice(0, 10) === today ? at.slice(11, 16) : `${at.slice(5, 10).replace("-", "/")} ${at.slice(11, 16)}`;
+}
+
+function renderChatList(forceBottom) {
+  const box = document.getElementById("chatList");
+  if (!box) return;
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  const meId = state.me.id;
+  const msgs = state.chat.msgs;
+  box.innerHTML = msgs.length ? msgs.map(m => `
+    <div class="msg ${m.userId === meId ? "me" : ""}">
+      ${m.userId === meId ? "" : `<div class="who">${esc(m.name)}</div>`}
+      <div class="bub">${esc(m.body)}</div>
+      <div class="time">${fmtChatTime(m.at)}</div>
+    </div>`).join("")
+    : `<div class="chat-empty">${state.chat.loaded ? "還沒有訊息，跟同伴打聲招呼吧 👋" : "載入中…"}</div>`;
+  if (forceBottom || nearBottom) box.scrollTop = box.scrollHeight;
+}
+
+function addMessages(list) {
+  const c = state.chat;
+  list.forEach(m => { if (!c.msgs.some(x => x.id === m.id)) c.msgs.push(m); });
+  c.msgs.sort((a, b) => a.id - b.id);
+  c.msgs = c.msgs.slice(-200);
+}
+
+async function loadChat() {
+  const c = state.chat;
+  if (!c) return;
+  try {
+    const r = await api("chatList", c.lastId ? { afterId: c.lastId } : {});
+    if (state.chat !== c) return;
+    const first = !c.loaded;
+    c.loaded = true;
+    if (r.messages.length) {
+      addMessages(r.messages);
+      c.lastId = Math.max(c.lastId, ...r.messages.map(m => m.id));
+    }
+    if (first || r.messages.length) renderChatList(first);
+    if (r.messages.length || first) chatIsVisible() ? markChatRead() : refreshUnread();
+  } catch {}
+}
+
+function startChat() {
+  if (!state.chat || state.chat.teamId !== state.team.id) state.chat = { teamId: state.team.id, msgs: [], lastId: 0, loaded: false };
+  renderChatList(true);
+  if (chatObserver) chatObserver.disconnect();
+  chatSeen = false;
+  if ("IntersectionObserver" in window) {
+    chatObserver = new IntersectionObserver(([en]) => { chatSeen = en.isIntersecting; if (chatSeen) markChatRead(); }, { threshold: 0.3 });
+    chatObserver.observe(document.getElementById("chatList"));
+  } else chatSeen = true;
+  const form = document.getElementById("chatForm"), input = form.querySelector("input"), btn = form.querySelector("button");
+  input.value = state.chatDraft || "";
+  input.oninput = () => { state.chatDraft = input.value; };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const body = input.value.trim();
+    if (!body || btn.disabled) return;
+    btn.disabled = true;
+    try {
+      const r = await api("chatSend", { body });
+      input.value = ""; state.chatDraft = "";
+      addMessages([r.message]);
+      renderChatList(true);
+      markChatRead();
+    } catch (err) { toast(err.message); }
+    btn.disabled = false;
+    input.focus();
+  };
+  loadChat();
+  stopChatPolling();
+  chatTimer = setInterval(() => { if (!document.hidden && state.tab === "mine") loadChat(); }, 5000);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && chatTimer) loadChat(); });
+
+function showEvolve(stage) {
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="card"><div style="font-size:15px" class="muted">恭喜進化！</div>
+    <div style="margin:14px 0">${sheepSvg(stage, undefined, state.team && state.team.prizes)}</div>
+    <h1>${stage}</h1><button class="btn">太好了！</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.tagName === "BUTTON") m.remove(); };
+  document.body.appendChild(m);
+}
+
+// ---------- 畫面：羊咩咩的家
+async function renderHome() {
+  $app.innerHTML = `<div class="hero" style="padding:8px 0 14px"><h1>🏡 羊咩咩的家</h1><div class="muted">大家的小羊都在這裡</div></div><div class="card" id="homeList"><div class="muted center">載入中…</div></div>`;
+  try {
+    const { teams } = await api("home");
+    if (state.tab !== "home") return;
+    const list = document.getElementById("homeList");
+    list.className = teams.length ? "home-grid" : "card";
+    // 每一組一個小羊圈：會動的小羊（依等級）＋組名、組員、分數
+    list.innerHTML = teams.length ? teams.map((t, i) => `
+      <div class="pen ${t.id === state.team.id ? "mine" : ""}">
+        <div class="pen-field meadow">
+          <span class="pen-rank">${["🥇", "🥈", "🥉"][i] || i + 1}${t.id === state.team.id ? `<span class="pen-me">我的組</span>` : ""}</span>
+          ${meadowHtml(sheepSvg(t.stage, Math.round((STAGE_SIZE[t.stage] || 120) * .68), t.prizes), t.plants, "pen-scene")}
+        </div>
+        <div class="pen-meta">
+          <div class="pen-name">${avatarHtml(t.avatar, "xs")}<span>${esc(t.name)}</span></div>
+          <div class="pen-mem">${t.members.map(m => esc(m.name)).join("、")}</div>
+          <div class="pen-foot"><span class="tag">${t.stage}</span><b>${t.score}<small> 分</small></b></div>
+        </div>
+      </div>`).join("") : `<div class="muted center">還沒有任何組別</div>`;
+  } catch (err) { document.getElementById("homeList").innerHTML = `<div class="error">${esc(err.message)}</div>`; }
+}
+
+// ---------- 畫面：設定
+function renderSettings() {
+  const t = state.team;
+  let avatar = t.avatar;
+  const picker = avatarPicker(avatar, v => (avatar = v));
+  $app.innerHTML = `
+    <div class="card">
+      <h2>帳戶設定</h2>
+      <label>帳戶名稱</label>
+      <input type="text" id="tname" maxlength="20" value="${esc(t.name)}">
+      <label>頭像</label>
+      ${picker.html}
+      <div class="error" id="setErr"></div>
+      <button class="btn" id="saveBtn">儲存</button>
+    </div>
+    <div class="card">
+      <h2>我的資料</h2>
+      <div>暱稱：${esc(state.me.name)}</div>
+      <div class="muted" style="margin-top:4px">手機：${esc(state.me.phone)}</div>
+      <button class="btn ghost" id="logoutBtn">登出</button>
+    </div>
+    <div class="card">
+      <h2>🔔 手機通知</h2>
+      <div id="pushBody" class="muted">檢查中…</div>
+    </div>
+    <div class="card">
+      <h2>進化規則</h2>
+      <div class="log">${[...state.config.stages].reverse().map(([low, name], i, arr) =>
+        `<div><span>${name}</span><span class="muted">${low}${arr[i + 1] ? "～" + (arr[i + 1][0] - 1) : " 分以上"}${arr[i + 1] ? " 分" : ""}</span></div>`).join("")}</div>
+    </div>`;
+  picker.bind();
+  renderPushCard();
+  document.getElementById("logoutBtn").onclick = logout;
+  document.getElementById("saveBtn").onclick = async e => {
+    e.target.disabled = true;
+    try {
+      const r = await api("updateTeam", { name: document.getElementById("tname").value, avatar });
+      state.team = { ...state.team, ...r.team };
+      toast("已儲存 ✓");
+    } catch (err) { document.getElementById("setErr").textContent = err.message; }
+    e.target.disabled = false;
+  };
+}
+
+// ---------- 美地植物
+const plantName = k => ((state.config.plants || []).find(p => p[0] === k) || [k, ""])[1];
+const plantImg = (k, cls = "") => `<img src="plants/${k}.png" alt="${esc(plantName(k))}" title="${esc(plantName(k))}" class="${cls}" draggable="false">`;
+// 小草原的背景：天空、雲、遠山、草地（以百分比畫，大小格子都能用）
+const MEADOW_SCENE = `<svg class="scene" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+  <defs><linearGradient id="mSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3f5"/><stop offset="1" stop-color="#e3f4fb"/></linearGradient>
+  <linearGradient id="mGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe39a"/><stop offset=".45" stop-color="#9fd171"/><stop offset="1" stop-color="#7fbd55"/></linearGradient></defs>
+  <rect width="100" height="100" fill="url(#mSky)"/>
+  <g fill="#fff" opacity=".9"><ellipse cx="80" cy="14" rx="13" ry="5"/><ellipse cx="88" cy="11" rx="8" ry="5"/><ellipse cx="18" cy="20" rx="9" ry="3.5"/><ellipse cx="24" cy="17.5" rx="6" ry="3.5"/></g>
+  <path d="M0 52 L12 38 L22 46 L34 33 L47 45 L58 36 L70 47 L83 35 L100 49 L100 56 L0 56Z" fill="#a9c6e6" opacity=".85"/>
+  <path d="M0 55 Q14 47 28 52 T56 51 T84 50 T100 52 L100 60 L0 60Z" fill="#a6d389"/>
+  <rect y="56" width="100" height="44" fill="url(#mGrass)"/>
+  <path d="M0 74 Q30 70 55 73 T100 72" stroke="#8cc663" stroke-width=".8" fill="none" opacity=".6"/>
+  <path d="M0 88 Q25 85 50 88 T100 87" stroke="#76b14c" stroke-width=".8" fill="none" opacity=".5"/>
+</svg>`;
+
+// 植物的固定位置（同一株每次都在同一個地方）：樹在後面靠近地平線，花草散在四周；中間留給羊
+const MEADOW_SLOTS = (() => {
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  // 中間留給羊：越靠前（y 越大）要讓出越寬的空間
+  const clear = y => (y < 62 ? 0 : y < 74 ? 14 : 24);
+  const pick = (n, y0, y1, minD, xMin = 2, xMax = 98) => {
+    const out = [];
+    for (let tries = 0; out.length < n && tries < 6000; tries++) {
+      const y = y0 + rnd() * (y1 - y0), x = xMin + rnd() * (xMax - xMin);
+      if (Math.abs(x - 50) < clear(y)) continue;
+      if (out.every(p => Math.hypot((p.x - x) * .7, (p.y - y) * 1.8) > minD)) out.push({ x, y });
+    }
+    return out;
+  };
+  // 越往下（越近）越大
+  const trees = pick(10, 52, 61, 10).map(p => ({ ...p, h: 34 + (p.y - 52) * 1.4 }));
+  const ground = pick(24, 60, 100, 7.5).map(p => ({ ...p, h: 10 + (p.y - 60) * .32 }));
+  return { trees, ground };
+})();
+const isTree = k => ((state.config.plants || []).findIndex(p => p[0] === k)) >= 20;
+
+function meadowHtml(sheep, plants, cls = "") {
+  const P = plants || [];
+  let ti = 0, gi = 0;
+  const items = P.map((k, i) => {
+    const tree = isTree(k);
+    const list = tree ? MEADOW_SLOTS.trees : MEADOW_SLOTS.ground;
+    const n = tree ? ti++ : gi++;
+    const base = list[n % list.length], round = Math.floor(n / list.length);
+    // 位置用完了就在旁邊再種一圈
+    const x = Math.min(97, Math.max(3, base.x + (round ? (round % 2 ? 4 : -4) * round : 0))), y = Math.min(99, base.y + round * 1.5);
+    const delay = -((i * 0.73) % 3).toFixed(2);
+    return `<span class="pl ${tree ? "tree" : ""}" style="left:${x.toFixed(1)}%;top:${(y - base.h).toFixed(1)}%;height:${base.h.toFixed(1)}%;z-index:${Math.round(y)}">${plantImg(k).replace("<img ", `<img style="animation-delay:${delay}s" `)}</span>`;
+  }).join("");
+  return `<div class="meadow ${cls}">${MEADOW_SCENE}${items}<div class="sheep-spot">${sheep}</div></div>`;
+}
+function showPlant(k) {
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="card"><div class="muted">今天的美地都填滿了，種下一株</div>
+    ${plantImg(k, "plant-big")}
+    <h1>${esc(plantName(k))}</h1>
+    ${state.team ? `<div class="muted">已經種在「${esc(state.team.name)}」的羊羊旁邊了</div>` : ""}
+    <button class="btn">太棒了！</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.tagName === "BUTTON") m.remove(); };
+  document.body.appendChild(m);
+}
+
+// ---------- 我的美地：每天一頁（今天的經節或綱目，加上三件事：時間、事件、結果），之前的頁面在下面
+const LAND_NAMES = ["第一件事", "第二件事", "第三件事"];
+const WEEKDAY = "日一二三四五六";
+let landTimer = null, landPending = null;
+
+function landDateText(day) {
+  const [y, m, d] = day.split("-").map(Number);
+  return `${m}月${d}日（${WEEKDAY[new Date(y, m - 1, d).getDay()]}）`;
+}
+
+// 語音輸入：按 🎤 開始說話，說的話會接在欄位後面；再按一次停止
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let mic = null;  // { rec, btn, el }
+const micBtn = id => `<button type="button" class="mic-btn" data-for="${id}" aria-label="語音輸入" title="語音輸入">🎤</button>`;
+
+function stopMic() {
+  if (!mic) return;
+  const m = mic; mic = null;
+  m.btn.classList.remove("on");
+  try { m.rec.stop(); } catch {}
+}
+
+function toggleMic(btn) {
+  const el = document.getElementById(btn.dataset.for);
+  if (mic && mic.btn === btn) return stopMic();
+  stopMic();
+  if (!SpeechRec) {
+    toast("這支手機的瀏覽器不支援，請點欄位後用鍵盤上的 🎤 麥克風說話");
+    el.focus();
+    return;
+  }
+  const rec = new SpeechRec();
+  rec.lang = "zh-TW";
+  rec.continuous = true;
+  rec.interimResults = true;
+  const base = el.value, max = +el.getAttribute("maxlength") || 300;
+  let finalText = "";
+  rec.onresult = ev => {
+    let interim = "";
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const t = ev.results[i][0].transcript;
+      if (ev.results[i].isFinal) finalText += t; else interim += t;
+    }
+    el.value = (base + finalText + interim).slice(0, max);
+    el.dispatchEvent(new Event("input"));
+  };
+  rec.onerror = ev => {
+    if (ev.error === "not-allowed" || ev.error === "service-not-allowed")
+      toast("沒有麥克風權限：請允許使用麥克風，或改用鍵盤上的 🎤");
+    else if (ev.error !== "no-speech" && ev.error !== "aborted") toast("語音輸入中斷了，請再按一次 🎤");
+  };
+  rec.onend = () => { if (mic && mic.rec === rec) stopMic(); };
+  try { rec.start(); } catch { toast("語音輸入無法開始，請再試一次"); return; }
+  mic = { rec, btn, el };
+  btn.classList.add("on");
+  toast("🎤 請說話，說完再按一次 🎤");
+}
+
+function landPlantHtml(k) {
+  return k ? `${plantImg(k)}<div>今天種下了一株<b>${esc(plantName(k))}</b>，已經長在羊羊旁邊 🌱</div>`
+           : `<span style="font-size:30px">🌱</span><div>經節和三件事的<b>時間、事件、結果</b>都填好，就能隨機種下一株植物；有開通知的話，事件時間到了會提醒你</div>`;
+}
+
+function landPastHtml(p) {
+  const evs = p.items.filter(i => i.time || i.event || i.result);
+  return `<div class="card land-past">
+    <div class="land-date"><h2>${landDateText(p.day)}${p.plant ? plantImg(p.plant) : ""}</h2></div>
+    ${p.verse ? `<div class="verse">📖 ${esc(p.verse)}</div>` : ""}
+    ${evs.map(i => `<div class="ev">
+      <div>${i.time ? `<span class="t">${esc(i.time)}</span>` : ""}${esc(i.event) || '<span class="muted">（沒有寫事件）</span>'}</div>
+      ${i.result ? `<div class="res">${esc(i.result)}</div>` : ""}
+    </div>`).join("")}
+  </div>`;
+}
+
+function landCollect() {
+  const v = id => (document.getElementById(id) || {}).value || "";
+  return {
+    day: state.land.today,
+    verse: v("landVerse"),
+    items: LAND_NAMES.map((_, i) => ({ time: v(`landTime${i}`), event: v(`landEvent${i}`), result: v(`landResult${i}`) })),
+  };
+}
+
+function setLandStatus(text, err) {
+  const el = document.getElementById("landStatus");
+  if (el) { el.textContent = text; el.classList.toggle("err", !!err); }
+}
+
+async function saveLand(data) {
+  try {
+    const r = await api("landSave", data);
+    if (state.land && state.land.today === data.day) state.land.entry = { day: data.day, verse: data.verse, items: data.items, plant: r.plant };
+    setLandStatus("已儲存 ✓");
+    if (r.newPlant) {
+      const box = document.getElementById("landPlant");
+      if (box) box.innerHTML = landPlantHtml(r.plant);
+      if (state.team) { state.team.plants = (state.team.plants || []).concat(r.plant); state.team.plantCount = (state.team.plantCount || 0) + 1; }
+      showPlant(r.plant);
+    }
+  } catch (err) {
+    if (err.status === 409) { toast(err.message); if (state.tab === "land") renderLand(); return; }
+    setLandStatus(err.message, true);
+  }
+}
+
+// 打字時自動儲存（停下來 1 秒後）；換分頁時立刻存
+function queueLandSave() {
+  landPending = landCollect();
+  setLandStatus("儲存中…");
+  clearTimeout(landTimer);
+  landTimer = setTimeout(flushLandSave, 1000);
+}
+function flushLandSave() {
+  clearTimeout(landTimer); landTimer = null;
+  if (landPending) { const d = landPending; landPending = null; saveLand(d); }
+}
+
+async function renderLand() {
+  if (!state.land) $app.innerHTML = `<div class="hero"><div class="muted">載入中…</div></div>`;
+  else drawLand();
+  try {
+    const r = await api("land");
+    if (state.tab !== "land") return;
+    // 正在打字時不要重畫今天的欄位（會把剛打的字蓋掉），除非已經換日
+    const typing = landPending || (document.activeElement && $app.contains(document.activeElement) && document.activeElement.matches("input, textarea"));
+    if (typing && state.land && state.land.today === r.today) return;
+    state.land = r;
+    drawLand();
+  } catch (err) { if (!state.land) $app.innerHTML = `<div class="card error">${esc(err.message)}</div>`; }
+}
+
+function drawLand() {
+  stopMic();
+  const L = state.land, e = L.entry;
+  $app.innerHTML = `
+    <h1>🌾 我的美地</h1>
+    <div class="muted" style="margin-bottom:14px">每天一頁，記下今天的經節和三件事</div>
+    <div class="land-plant" id="landPlant">${landPlantHtml(e.plant)}</div>
+    <div class="card land-verse">
+      <div class="land-date"><h2>${landDateText(L.today)}</h2><span class="land-status" id="landStatus"></span></div>
+      <label for="landVerse" style="margin-top:0">📖 今天的經節或綱目</label>
+      <div class="mic-wrap"><textarea class="land-in" id="landVerse" maxlength="300" placeholder="例：申命記 8:7 因為耶和華你神領你進入美地…">${esc(e.verse)}</textarea>${micBtn("landVerse")}</div>
+    </div>
+    ${LAND_NAMES.map((name, i) => `
+    <div class="card land-item">
+      <h3><span class="num">${i + 1}</span>${name}</h3>
+      <div class="row">
+        <div><label for="landTime${i}">時間</label><input type="time" id="landTime${i}" value="${esc(e.items[i].time)}"></div>
+        <div><label for="landEvent${i}">事件</label><div class="mic-wrap"><input type="text" id="landEvent${i}" maxlength="100" value="${esc(e.items[i].event)}" placeholder="做了什麼">${micBtn(`landEvent${i}`)}</div></div>
+      </div>
+      <label for="landResult${i}">結果</label>
+      <div class="mic-wrap"><textarea class="land-in" id="landResult${i}" maxlength="200" placeholder="結果如何、有什麼感受">${esc(e.items[i].result)}</textarea>${micBtn(`landResult${i}`)}</div>
+    </div>`).join("")}
+    <h2 style="margin:22px 0 10px">📜 之前的美地</h2>
+    <div id="landPast">${L.history.length ? L.history.map(landPastHtml).join("") : '<div class="land-empty">還沒有之前的紀錄，明天就會看到今天寫的內容</div>'}</div>
+    ${L.more ? '<button class="btn ghost" id="landMore">載入更早的紀錄</button>' : ""}`;
+  $app.querySelectorAll("#landVerse, [id^=landTime], [id^=landEvent], [id^=landResult]").forEach(el => {
+    el.addEventListener("input", queueLandSave);
+    el.addEventListener("change", queueLandSave);
+  });
+  $app.querySelectorAll(".mic-btn").forEach(b => b.onclick = () => toggleMic(b));
+  const more = document.getElementById("landMore");
+  if (more) more.onclick = async () => {
+    more.disabled = true;
+    try {
+      const r = await api("land", { before: L.oldest });
+      L.history = L.history.concat(r.history); L.more = r.more; L.oldest = r.oldest;
+      document.getElementById("landPast").insertAdjacentHTML("beforeend", r.history.map(landPastHtml).join(""));
+      if (!r.more) more.remove(); else more.disabled = false;
+    } catch (err) { toast(err.message); more.disabled = false; }
+  };
+}
+
+// ---------- 導覽
+function showTab(tab) {
+  stopMic();
+  flushLandSave();
+  stopLobbyPolling();
+  stopMissionTimers();
+  stopChatPolling();
+  chatSeen = false;
+  if (chatObserver) { chatObserver.disconnect(); chatObserver = null; }
+  state.tab = tab;
+  $tabs.classList.remove("hidden");
+  $tabs.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  window.scrollTo(0, 0);
+  ({ mine: renderMine, home: renderHome, mission: renderMission, land: renderLand, settings: renderSettings })[tab]();
+}
+$tabs.onclick = async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.tab === "mine") {
+    showTab("mine"); // 先顯示目前資料，背景再更新
+    try { const r = await api("me"); if (r.team && state.tab === "mine") { state.team = r.team; renderMine(); } } catch {}
+    return;
+  }
+  showTab(b.dataset.tab);
+};
+
+async function logout() {
+  flushLandSave();
+  state.land = null;
+  let endpoint = null;
+  try { const sub = await currentSubscription(); endpoint = sub && sub.endpoint; } catch {}
+  api("logout", endpoint ? { endpoint } : {}).catch(() => {});
+  push.key = undefined;
+  setToken("");
+  stopChatPolling();
+  stopUnreadPolling();
+  stopMissionTimers();
+  setMissionAlert(false);
+  state.me = state.team = state.chat = null;
+  state.chatDraft = "";
+  renderAuth();
+}
+
+async function boot() {
+  if (!state.me) $app.innerHTML = `<div class="hero"><div>${sheepSvg("小羊羔", 110)}</div><div class="muted">載入中…</div></div>`;
+  try {
+    const r = await api("me");
+    state.config = r.config;
+    if (!r.user) { setToken(""); return renderAuth(); }
+    state.me = r.user; state.team = r.team; state.lobby = r.lobby;
+    syncPush();
+    setUnread(r.unread || 0);
+    setMissionAlert(r.missionAlert);
+    if (state.team) startUnreadPolling();
+    if (!state.team) renderLobby();
+    else {
+      showTab("mine");
+      if (location.hash === "#chat") { scrollToChat(); history.replaceState(null, "", location.pathname); }
+      if (location.hash === "#mission") { showTab("mission"); history.replaceState(null, "", location.pathname); }
+      if (location.hash === "#land") { showTab("land"); history.replaceState(null, "", location.pathname); }
+    }
+  } catch (err) {
+    if (err.status === 401) renderAuth();
+    else $app.innerHTML = `<div class="card error">無法連線：${esc(err.message)}<br><button class="btn" onclick="boot()">重試</button></div>`;
+  }
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>小羊長大日記 後台</title>
+<style>
+body{margin:0;font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f6f8ef;color:#2f3a2f}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0}h2{font-size:17px;color:#4a9a4e;margin:0 0 10px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(60,80,40,.06)}
+.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;white-space:nowrap}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e6eadc}th{background:#eaf6e6}
+.muted{color:#7a857a;font-size:14px}.stats{display:flex;flex-wrap:wrap;gap:10px}
+.stat{flex:1;min-width:120px;background:#f3f8ee;border-radius:12px;padding:10px 12px}.stat b{display:block;font-size:24px}
+button{display:inline-block;padding:9px 14px;border-radius:10px;background:#6bbf6e;color:#fff;border:0;font-size:15px;margin:4px 6px 4px 0;cursor:pointer}
+button.ghost{background:none;color:#4a9a4e;border:1.5px solid #6bbf6e}
+input{padding:11px;font-size:16px;border:1.5px solid #e6eadc;border-radius:10px;width:100%;box-sizing:border-box;margin:8px 0}
+select{padding:11px;border-radius:10px;border:1.5px solid #e6eadc;font-size:15px}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.err{color:#d9534f;font-size:14px;min-height:1em}
+</style></head>
+<body><div class="wrap" id="app"></div>
+<script>
+const API_URL = "https://gserdnkovlwfdgcaguqe.supabase.co/functions/v1/lamb";
+const $app = document.getElementById("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = s => (s || "").replace("T", " ").slice(0, 16);
+const getTok = () => { try { return localStorage.getItem("lamb_admin") || ""; } catch { return ""; } };
+const setTok = t => { try { t ? localStorage.setItem("lamb_admin", t) : localStorage.removeItem("lamb_admin"); } catch {} };
+let data = null;
+
+async function call(action, d = {}) {
+  const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, data: { ...d, adminToken: getTok() } }) });
+  const body = await res.json().catch(() => ({}));
+  if (res.status === 401 && action !== "adminLogin") { setTok(""); loginPage(body.error); throw new Error(body.error); }
+  if (!res.ok) throw new Error(body.error || "發生錯誤");
+  return body;
+}
+
+function loginPage(error = "") {
+  $app.innerHTML = `<div class="card" style="max-width:360px;margin:40px auto"><h1>🐑 後台登入</h1>
+    <form id="f"><input type="password" id="pw" placeholder="管理密碼" autofocus>
+    <div class="err" id="err">${esc(error)}</div><button type="submit">登入</button></form></div>`;
+  document.getElementById("f").onsubmit = async e => {
+    e.preventDefault();
+    try { setTok((await call("adminLogin", { password: document.getElementById("pw").value })).adminToken); load(); }
+    catch (err) { document.getElementById("err").textContent = err.message; }
+  };
+}
+
+function table(headers, rows, empty) {
+  if (!rows.length) return `<div class="muted">${esc(empty)}</div>`;
+  return `<div class="scroll"><table><tr>${headers.map(h => `<th>${esc(h)}</th>`).join("")}</tr>${
+    rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+}
+
+const stageOf = s => (data.stages.find(([low]) => s >= low) || data.stages[data.stages.length - 1])[1];
+const actLabel = k => (data.activities[k] || {}).label || k;
+const teamRows = () => data.teams.map((t, i) => [i + 1, t.name, t.members || "", t.n, t.score, t.stage, fmt(t.created_at)]);
+const userRows = () => data.users.map(u => [u.name, u.phone, u.team || "（尚未加入）", fmt(u.created_at)]);
+const checkinRows = () => data.checkins.map(c => [fmt(c.created_at), c.user, c.team, actLabel(c.activity), c.points]);
+
+function missionHtml() {
+  const hours = [[1, "1 小時"], [3, "3 小時"], [6, "6 小時"], [12, "12 小時"], [24, "1 天"], [48, "2 天"], [72, "3 天"], [168, "1 週"]]
+    .map(([h, l]) => `<option value="${h}"${h === 24 ? " selected" : ""}>${l}</option>`).join("");
+  const form = `<form id="mf" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <input id="mt" maxlength="40" placeholder="任務名稱，例如：今天為組員各禱告一次" required style="flex:1;min-width:220px;margin:0">
+    <select id="mh">${hours}</select><button type="submit">發佈任務 🎯</button></form>
+    <div class="muted" style="margin-top:6px">發佈新任務時，正在進行的任務會自動結束；有開通知的人會收到推播。</div>`;
+  const m = data.mission;
+  if (!m) return `<div class="muted" style="margin-bottom:10px">目前沒有進行中的任務（大家看到的是「等待中」）</div>` + form;
+  return `<div style="margin-bottom:10px"><b style="font-size:17px">進行中：「${esc(m.title)}」</b>
+    <div class="muted">截止時間：${esc(fmt(m.endsAt))}</div>
+    <button id="endM" style="background:#d9534f;margin-top:6px">提早結束任務</button></div>
+    ${table(["組別", "組員（✓ 已完成）", "完成人數", "抽獎券"], m.teams.map(t => [t.team, t.members, `${t.done} / ${t.n}`, t.ticket ? "🎟️ 已獲得" : ""]), "還沒有組別")}
+    <h3 style="font-size:15px;margin:16px 0 6px">發佈新任務</h3>` + form;
+}
+
+function render() {
+  const joined = data.users.filter(u => u.team).length;
+  const stats = [["註冊人數", data.users.length], ["已加入組別", joined], ["尚未加入", data.users.length - joined], ["組別數", data.teams.length], ["開啟通知", data.pushUsers + " 人"]]
+    .map(([k, v]) => `<div class="stat"><span class="muted">${k}</span><b>${v}</b></div>`).join("");
+  $app.innerHTML = `
+    <div class="top"><h1>🐑 小羊長大日記 後台</h1>
+      <div><button class="ghost" id="reload">🔄 重新整理</button><button class="ghost" id="logout">登出</button></div></div>
+    <div class="muted" style="margin-bottom:12px">更新時間：${esc(fmt(data.now))}</div>
+    <div class="card"><div class="stats">${stats}</div></div>
+    <div class="card"><h2>【🎯 羊羊出任務】</h2>${missionHtml()}</div>
+    <div class="card"><h2>【組別】</h2>${table(["排名", "組別名稱", "組員", "人數", "分數", "等級", "裝備", "建立時間"],
+      data.teams.map((t, i) => [i + 1, t.name, t.members || "", t.n, t.score, t.stage, t.armor.join("、") || "—", fmt(t.created_at)]), "還沒有組別")}</div>
+    <div class="card"><h2>【註冊名單】</h2><div class="muted" style="margin-bottom:6px">尚未加入組別的人排在最前面</div>${table(["暱稱", "手機", "組別", "註冊時間"], userRows(), "還沒有人註冊")}</div>
+    <div class="card"><h2>【組隊邀請中】</h2>${table(["邀請人", "組別名稱", "組員（✓ 已同意）", "邀請時間"], data.invites.map(i => [i.inviter, i.team_name, i.members, fmt(i.created_at)]), "目前沒有")}</div>
+    <div class="card"><h2>【最近打卡紀錄】</h2>${table(["時間", "誰", "組別", "項目", "分數"], checkinRows().slice(0, 50).map(r => [...r.slice(0, 4), "+" + r[4]]), "還沒有紀錄")}</div>
+    <div class="card"><h2>【🌾 美地事件提醒】</h2><div class="muted">Supabase 每 5 分鐘自動檢查一次，大家在「我的美地」填的事件時間到了，手機就會收到提醒，不用另外設定。</div></div>
+    <div class="card"><h2>下載 Excel（CSV）</h2>
+      <button data-x="users">註冊名單</button><button data-x="teams">組別</button><button data-x="checkins">打卡紀錄</button></div>`;
+  document.getElementById("reload").onclick = load;
+  document.getElementById("logout").onclick = () => { setTok(""); loginPage(); };
+  document.getElementById("mf").onsubmit = e => { e.preventDefault(); act("adminMission", { title: document.getElementById("mt").value, hours: document.getElementById("mh").value }); };
+  const end = document.getElementById("endM");
+  if (end) end.onclick = () => confirm("確定要結束這個任務嗎？") && act("adminEndMission");
+  $app.querySelectorAll("[data-x]").forEach(b => b.onclick = () => exportCsv(b.dataset.x));
+}
+
+async function act(action, d) {
+  try { data = await call(action, d); render(); } catch (e) { if (getTok()) alert(e.message); }
+}
+const load = () => act("adminData");
+
+function exportCsv(t) {
+  const [name, header, rows] = t === "teams" ? ["組別", ["排名", "組別名稱", "組員", "人數", "分數", "等級", "建立時間"], teamRows()]
+    : t === "checkins" ? ["打卡紀錄", ["時間", "誰", "組別", "項目", "分數"], checkinRows()]
+    // 手機前面加 tab，避免 Excel 把開頭的 0 吃掉
+    : ["註冊名單", ["暱稱", "手機", "組別", "註冊時間"], userRows().map(r => [r[0], "\t" + r[1], ...r.slice(2)])];
+  const cell = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+  const csv = "﻿" + [header, ...rows].map(r => r.map(cell).join(",")).join("\r\n"); // BOM 讓 Excel 正確顯示中文
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = `${name}_${data.now.slice(0, 10).replace(/-/g, "")}.csv`;
+  a.click();
+}
+
+getTok() ? load() : loginPage();
+</script>
+</body></html>

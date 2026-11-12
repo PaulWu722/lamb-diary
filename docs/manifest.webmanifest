@@ -1,0 +1,16 @@
+{
+  "name": "小羊長大日記",
+  "short_name": "小羊日記",
+  "description": "每天一點點，小羊慢慢長大",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f8ef",
+  "theme_color": "#7cc47f",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
